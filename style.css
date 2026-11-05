@@ -285,12 +285,12 @@ footer a{text-decoration:none}footer a:hover{color:var(--on-dark)}
 .descent{position:relative;background:var(--ink-d);color:var(--on-dark)}
 .d-stage{position:relative;overflow:hidden;padding:80px 0}
 .d-layer,.d-shade{position:absolute;inset:0;background:center/cover no-repeat}
-.d-surface{background-image:url(C:/Program Files/Git/enjoy-moldova/img/r/1600/hero-vineyard.webp);opacity:0}
+.d-surface{background-image:url(/enjoy-moldova/img/r/1600/hero-vineyard.webp);opacity:0}
 .d-stone{opacity:0;background:repeating-linear-gradient(174deg,rgba(255,255,255,.06) 0 2px,transparent 2px 38px),
   repeating-linear-gradient(181deg,rgba(0,0,0,.08) 0 1px,transparent 1px 23px),
   radial-gradient(ellipse at 25% 20%,#c4ad8c,transparent 55%),radial-gradient(ellipse at 80% 75%,#6e5643,transparent 55%),
   linear-gradient(180deg,#b19a77,#6a5340 60%,#2e2119)}
-.d-cellar{background-image:url(C:/Program Files/Git/enjoy-moldova/img/r/1600/milestii-mici.webp)}
+.d-cellar{background-image:url(/enjoy-moldova/img/r/1600/milestii-mici.webp)}
 .d-cellar::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(255,160,80,.28),transparent 60%)}
 .d-shade{background:linear-gradient(180deg,rgba(20,8,8,.6),rgba(20,8,8,.88))}
 .d-facts{position:relative;display:grid;gap:var(--s6)}
