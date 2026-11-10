@@ -170,17 +170,14 @@ TOURS = [
 ]
 
 PAGES = {
-    # new path: (section, title, intro, source slug in data/pages.json)
-    'about-moldova/facts': ('about-moldova', 'Facts about Moldova', 'Between Romania and Ukraine, a small country with four seasons, three rivers and a long history.', 'moldova'),
-    'about-moldova/chisinau': ('about-moldova', 'Chișinău', 'One of the greenest capitals in Europe, and the starting point of every tour.', 'chisinau'),
-    'about-moldova/moldovan-cuisine': ('about-moldova', 'Moldovan Cuisine', 'Balkan, Turkish, Slavic and Romanian influences on one table.', 'moldavian-cuisine'),
-    'about-moldova/travel-to-moldova': ('about-moldova', 'Travel to Moldova', 'Why Moldova, and how we plan your trip.', 'travel-to-moldova'),
-    'about-moldova/top-tours-moldova': ('about-moldova', 'Top Tours Moldova', 'The places travellers ask for most.', 'top-tours-moldova'),
-    'useful-info/emergency-numbers': ('useful-info', 'Useful phone numbers', 'Emergency services, transport and useful contacts in Moldova.', 'emmergency-calls'),
-    'useful-info/customs-rules': ('useful-info', 'Customs rules', 'What you can bring in and take out, and when to declare cash.', 'customs-rules'),
-    'useful-info/border-points': ('useful-info', 'Border points', 'Map of Moldova’s border crossing points.', 'border-points'),
-    'useful-info/embassies-in-the-republic-of-moldova': ('useful-info', 'Embassies in Moldova', 'Foreign diplomatic missions in Chișinău.', 'embassies-in-the-republic-of-moldova'),
-    'useful-info/embassies-of-the-republic-of-moldova': ('useful-info', 'Moldovan embassies abroad', 'Consular offices of the Republic of Moldova.', 'embassies-of-the-republic-of-moldova'),
+    # new path: (section, title, intro, source slugs in data/pages.json). Old pages are merged into the new menu (11.2026)
+    'about-moldova/why-moldova': ('about-moldova', 'Why Moldova?', 'Why travel to Moldova, and the places travellers ask for most.', ['travel-to-moldova', 'top-tours-moldova']),
+    'about-moldova/facts': ('about-moldova', 'Facts about Moldova', 'Between Romania and Ukraine, a small country with four seasons, three rivers and a long history.', ['moldova']),
+    'about-moldova/chisinau': ('about-moldova', 'Chișinău', 'One of the greenest capitals in Europe, and the starting point of every tour.', ['chisinau']),
+    'about-moldova/moldovan-cuisine': ('about-moldova', 'Our cuisine', 'Balkan, Turkish, Slavic and Romanian influences on one table.', ['moldavian-cuisine']),
+    'plan-your-trip/general-advice': ('useful-info', 'General advice', 'Emergency numbers, useful contacts and the foreign embassies in Chișinău.', ['emmergency-calls', 'embassies-in-the-republic-of-moldova']),
+    'plan-your-trip/passport-visa': ('useful-info', 'Passport & visa', 'Where to ask about visas: the embassies and consulates of Moldova abroad.', ['embassies-of-the-republic-of-moldova']),
+    'plan-your-trip/customs-border-points': ('useful-info', 'Customs rules & border crossing points', 'What you can bring in and take out, and where to cross the border.', ['customs-rules', 'border-points']),
 }
 
 # ---- Clean URLs. Old WordPress slugs get a 301 redirect (written to REDIRECTS-301.csv and redirects.htaccess) ----
@@ -203,7 +200,14 @@ NEW_SLUGS = {  # tour data key (= old slug) → new slug
 PAGE_REDIRECTS = {
     '/about-moldova/moldova/': '/about-moldova/facts/',
     '/about-moldova/moldavian-cuisine/': '/about-moldova/moldovan-cuisine/',
-    '/useful-info/emmergency-calls/': '/useful-info/emergency-numbers/',
+    # old pages merged into the new menu (11.2026)
+    '/useful-info/emmergency-calls/': '/plan-your-trip/general-advice/',
+    '/useful-info/embassies-in-the-republic-of-moldova/': '/plan-your-trip/general-advice/',
+    '/useful-info/embassies-of-the-republic-of-moldova/': '/plan-your-trip/passport-visa/',
+    '/useful-info/customs-rules/': '/plan-your-trip/customs-border-points/',
+    '/useful-info/border-points/': '/plan-your-trip/customs-border-points/',
+    '/about-moldova/travel-to-moldova/': '/about-moldova/why-moldova/',
+    '/about-moldova/top-tours-moldova/': '/about-moldova/why-moldova/',
     '/contacts/': '/contact/',
     '/2019/10/19/hello-world/': '/privacy/',
     '/tours-2/': '/',
@@ -217,11 +221,10 @@ HIKING_TOURS = {'hiking-tour-tipova-saharna'}
 
 # ---- Internal links: content pages → tours that match them ----
 RELATED_TOURS = {
-    'about-moldova/facts': ['culturewineandgastronomytour', 'atasteofmoldova', 'countryside-tour'],
+    'about-moldova/facts': ['cricova-winery-and-orheiul-vechi-tour', 'old-orhei-complex-and-chateau-vartely-winery', 'purcari-winery-and-the-medieval-church'],
     'about-moldova/chisinau': ['milestii-mici-wine-cellars-and-private-gallery-by-petru-costin', 'old-orhei-complex-and-chateau-vartely-winery', 'capriana-monastery'],
-    'about-moldova/moldovan-cuisine': ['wine-and-gastronomy', 'gagausia-tour', 'culturewineandgastronomytour'],
-    'about-moldova/travel-to-moldova': ['culturewineandgastronomytour', 'milestii-mici-wine-cellars-and-private-gallery-by-petru-costin', 'trip-to-transnistria'],
-    'about-moldova/top-tours-moldova': ['cricova-winery-and-orheiul-vechi-tour', 'milestii-mici-wine-cellars-and-private-gallery-by-petru-costin', 'trip-to-transnistria'],
+    'about-moldova/moldovan-cuisine': ['gagausia-tour', 'old-orhei-complex-and-chateau-vartely-winery', 'purcari-winery-and-the-medieval-church'],
+    'about-moldova/why-moldova': ['cricova-winery-and-orheiul-vechi-tour', 'milestii-mici-wine-cellars-and-private-gallery-by-petru-costin', 'trip-to-transnistria'],
 }
 
 # ---- Destination pages: words that find the matching paragraphs in the site's tour descriptions ----
@@ -298,6 +301,18 @@ DESTINATIONS = [
 # Approximate road distance from Chișinău, km. Țipova and Orheiul Vechi: from the site; the rest: to check before launch.
 DEST_ROAD_KM = {'soroca': 160, 'tipova-saharna': 120, 'orheiul-vechi': 60, 'capriana': 40, 'cricova': 15, 'transnistria': 70,
                 'milestii-mici': 20, 'castel-mimi': 40, 'purcari': 115, 'gagauzia': 100}
+
+# Destinations menu (new site menu, 11.2026): every place on the map by type. The client will send the full list with
+# descriptions; places without a tour show as "on request". Festivals: list to come from the client.
+DEST_TYPE = {
+    'wineries': ['cricova', 'milestii-mici', 'castel-mimi', 'purcari', 'vartely', 'cojusna', 'asconi', 'etcetera', 'kvint',
+                 'comrat-wines', 'mircesti', 'poiana', 'carlevana'],
+    'monasteries': ['capriana', 'curchi', 'orheiul-vechi'],
+    'natural-reserves': ['tipova-saharna'],
+    'historical-sights': ['soroca', 'transnistria', 'tighina', 'causeni', 'petru-costin'],
+    'craftsmanship': ['arta-rustica', 'besalma', 'congaz', 'gagauzia'],
+    'festivals': [],
+}
 
 # Main destinations by kind, for the map filter
 DEST_KIND = {'cricova': 'winery', 'milestii-mici': 'winery', 'castel-mimi': 'winery', 'purcari': 'winery'}  # the rest are sights

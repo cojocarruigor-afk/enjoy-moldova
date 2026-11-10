@@ -4,7 +4,7 @@ import json, os, re, html, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from content import (SITE, CATEGORIES, TOURS, PAGES, BLOG_CATS, INTERESTS, TRIP_TAGS, TRIP_ORDER, DESTINATIONS, NEW_SLUGS,
                      PAGE_REDIRECTS, CELLAR_TOURS, TRANSNISTRIA_TOURS, HIKING_TOURS, RELATED_TOURS, DEST_KEYWORDS, ITINERARIES, POIS, DEST_KIND,
-                     DEST_ROAD_KM)
+                     DEST_ROAD_KM, DEST_TYPE)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -171,38 +171,65 @@ def quote_form(selected=None, compact=False, button='Send my request'):
 
 
 # ---------------------------------------------------------------- layout
-BEFORE_YOU_GO = [('/plan-your-trip/is-moldova-safe/', 'Is Moldova safe?'), ('/plan-your-trip/moldova-itinerary/', 'Moldova in 3, 5 or 7 days'),
-                 ('/plan-your-trip/cricova-vs-milestii-mici/', 'Cricova or Mileștii Mici?'), ('/plan-my-trip/', 'Build my trip')]
+BEFORE_YOU_GO = [('/plan-your-trip/moldova-itinerary/', 'Moldova in 3, 5 or 7 days'), ('/plan-your-trip/cricova-vs-milestii-mici/', 'Cricova or Mileștii Mici?'),
+                 ('/plan-your-trip/is-moldova-safe/', 'Is Moldova safe?')]
+QUOTE = '/contact/#quote'  # the trip builder is switched off for now (new site menu, 11.2026): every quote button goes to the form
+
+# Main menu from "new site menu_11.26.docx": (label, url, groups); item = (label, url or None, live).
+# Items not live yet stay visible with a "soon" tag: linked when the page already exists, plain text when it doesn't.
+DEST_TYPES = [('wineries', 'Wineries'), ('monasteries', 'Monasteries'), ('natural-reserves', 'Natural reserves'),
+              ('historical-sights', 'Historical sights'), ('craftsmanship', 'Craftsmanship'), ('festivals', 'Festivals')]
+MENU = [
+    ('Tours', '/tours/', [
+        ('Popular tours', [('1-day trips', '/tours/day-trips/', True), ('Weekend trips (2–3 days)', None, False), ('City breaks', None, False)]),
+        ('Wineries & wine tastings', [('All wineries', '/tours/wineries/', True)]),
+        ('By interest', [('Wine tours', '/tours/wine-tours/', False), ('Culture & heritage', '/tours/culture-heritage/', False),
+                         ('Nature & countryside', '/tours/nature-countryside/', False), ('Active trips', None, False)])]),
+    ('Destinations', '/destinations/', [('By type', [(n, f'/destinations/#{k}', True) for k, n in DEST_TYPES])]),
+    ('Plan your trip', '/plan-your-trip/', [
+        ('Before you go', [('Is Moldova safe?', '/plan-your-trip/is-moldova-safe/', False), ('Moldova in 3, 5 or 7 days', '/plan-your-trip/moldova-itinerary/', True),
+                           ('Cricova or Mileștii Mici?', '/plan-your-trip/cricova-vs-milestii-mici/', True), ('Build my trip', None, False)]),
+        ('Useful info', [('General advice', '/plan-your-trip/general-advice/', False), ('Passport & visa', '/plan-your-trip/passport-visa/', False),
+                         ('Customs rules & border crossing points', '/plan-your-trip/customs-border-points/', False), ('Festivals & holidays', None, False)])]),
+    ('About', '/about-us/', [
+        ('Moldova', [('Why Moldova?', '/about-moldova/why-moldova/', False), ('Facts about Moldova', '/about-moldova/facts/', True),
+                     ('Chișinău', '/about-moldova/chisinau/', False), ('Our cuisine', '/about-moldova/moldovan-cuisine/', False)]),
+        ('About us', [('Get to know us', '/about-us/', False), ('Our services', None, False), ('Transportation services', None, False), ('Contact', '/contact/', True)])]),
+    ('MICE & Business Travel', '/groups-mice/', [('MICE & Business Travel', [('Why choose Moldova?', None, False), ('Our services', '/groups-mice/', False),
+                                                                          ('Hotels & venues', None, False), ('Sport travel', None, False)])]),
+    ('For travel agencies', '/travel-agencies/tour-samples/', [('For travel agencies', [('Why partner with us?', None, False),
+                                                                                        ('Customized tour samples', '/travel-agencies/tour-samples/', True)])]),
+    ('Blog', '/blog/', []),
+]
+
+
+def menu_item(label, url, live):
+    tag = '' if live else '<small class="soon-tag">soon</small>'
+    return f'<a href="{url}">{e(label)}{tag}</a>' if url else f'<span class="soon-item">{e(label)}{tag}</span>'
 
 
 def nav():
-    cat = lambda k: f'<a href="/tours/{k}/">{ic(CAT_ICON[k])} {CATEGORIES[k]["name"]}</a>'
-    pop = ''.join(f'<a href="{BY_SLUG[s]["url"]}">{e(BY_SLUG[s]["title"])}</a>' for s in
-                  ['culturewineandgastronomytour', 'milestii-mici-wine-cellars-and-private-gallery-by-petru-costin', 'trip-to-transnistria'])
-    links = lambda sec: ''.join(f'<a href="/{k}/">{e(v[1])}</a>' for k, v in PAGES.items() if v[0] == sec)
-    byg = ''.join(f'<a href="{u}">{e(n)}</a>' for u, n in BEFORE_YOU_GO)
+    out = []
+    for label, url, groups in MENU:
+        if not groups:
+            out.append(f'<a href="{url}">{e(label)}</a>')
+            continue
+        cols = ''.join(f'<div>{f"<h5>{e(h)}</h5>" if len(groups) > 1 else ""}{"".join(menu_item(*i) for i in items)}</div>' for h, items in groups)
+        out.append(f'<div class="dd"><a class="dd-top" href="{url}">{e(label)}</a><div class="dd-panel{" mega" if len(groups) > 1 else ""}">{cols}</div></div>')
     return f'''<nav class="main" id="nav" aria-label="Main">
-<div class="dd"><a class="dd-top" href="/tours/">Tours</a><div class="dd-panel mega">
-<div><h5>By length</h5>{cat('multi-day-tours')}{cat('day-trips')}</div>
-<div><h5>By interest</h5>{cat('wine-tours')}{cat('culture-heritage')}{cat('nature-countryside')}</div>
-<div><h5>Popular</h5>{pop}<a class="all" href="/tours/">See all tours →</a></div></div></div>
-<a href="/destinations/">Destinations</a>
-<div class="dd"><a class="dd-top" href="/plan-your-trip/">Plan your trip</a><div class="dd-panel mega">
-<div><h5>Before you go</h5>{byg}</div><div><h5>About Moldova</h5>{links('about-moldova')}</div><div><h5>Useful info</h5>{links('useful-info')}</div></div></div>
-<a href="/blog/">Blog</a>
-<div class="dd"><a class="dd-top" href="/about-us/">About</a><div class="dd-panel"><a href="/about-us/">About us</a><a href="/groups-mice/">Groups, MICE &amp; agents</a><a href="/contact/">Contact</a></div></div>
-<a class="btn btn-primary nav-cta" href="/plan-my-trip/">Get a free quote</a>
+{''.join(out)}
+<a class="btn btn-primary nav-cta" href="{QUOTE}">Get a free quote</a>
 </nav>'''
 
 
 def layout(path, title, desc, body, schema=None, wa_msg='Hello! I’d like to plan a trip to Moldova.', noindex=False,
-           mobile_cta=('Get a free quote', '/plan-my-trip/')):
+           mobile_cta=('Get a free quote', QUOTE), whatsapp=True):
     # only English is published: the other languages are listed by their own names, without a link, until their translation exists
     langs = ''.join(f'<a class="on" href="{path}" lang="{c}" aria-current="true">{n}</a>' if c == 'en' else
                     f'<span lang="{c}" aria-disabled="true">{n}<small>soon</small></span>' for c, n in SITE['langs'])
     ld = ''.join(f'<script type="application/ld+json">{json.dumps(s, ensure_ascii=False)}</script>' for s in (schema or []))
-    tours_col = ''.join(f'<li><a href="/tours/{k}/">{v["name"]}</a></li>' for k, v in CATEGORIES.items())
-    plan_col = ''.join(f'<li><a href="{u}">{e(n)}</a></li>' for u, n in BEFORE_YOU_GO[:3]) + '<li><a href="/about-moldova/">About Moldova</a></li><li><a href="/useful-info/">Useful info</a></li>'
+    tours_col = '<li><a href="/tours/day-trips/">1-day trips</a></li><li><a href="/tours/wineries/">Wineries &amp; wine tastings</a></li><li><a href="/destinations/">Destinations</a></li>'
+    plan_col = ''.join(f'<li><a href="{u}">{e(n)}</a></li>' for u, n in BEFORE_YOU_GO[:2]) + '<li><a href="/about-moldova/facts/">Facts about Moldova</a></li>'
     page = f'''<!doctype html>
 <html lang="en">
 <head>
@@ -236,12 +263,12 @@ def layout(path, title, desc, body, schema=None, wa_msg='Hello! I’d like to pl
 <p><a href="{SITE['facebook']}" rel="noopener">Facebook</a> · <a href="{SITE['instagram']}" rel="noopener">Instagram</a></p></div>
 <div><h4>Tours</h4><ul>{tours_col}<li><a href="/destinations/">Destinations map</a></li></ul></div>
 <div><h4>Plan your trip</h4><ul>{plan_col}</ul></div>
-<div><h4>Company</h4><ul><li><a href="/about-us/">About us</a></li><li><a href="/groups-mice/">Groups, MICE &amp; agents</a></li><li><a href="/blog/">Blog</a></li><li><a href="/contact/">Contact</a></li></ul></div>
+<div><h4>Company</h4><ul><li><a href="/about-us/">About us</a></li><li><a href="/groups-mice/">MICE &amp; Business Travel</a></li><li><a href="/travel-agencies/tour-samples/">For travel agencies</a></li><li><a href="/blog/">Blog</a></li><li><a href="/contact/">Contact</a></li></ul></div>
 </div>
 <div class="copy">© 2026 {SITE['legal']} · <a href="/terms/">Terms &amp; Conditions</a> · <a href="/privacy/">Privacy Policy</a> · <a href="/cancellation-policy/">Cancellation policy</a></div>
 </div></footer>
-<a class="wa-float js-wa" href="#" data-msg="{e(wa_msg)}" aria-label="Chat on WhatsApp">{WA_SVG}</a>
-<div class="mobile-bar">{wa(wa_msg, 'WhatsApp')}<a class="btn btn-primary" href="{mobile_cta[1]}">{mobile_cta[0]}</a></div>
+{f'<a class="wa-float js-wa" href="#" data-msg="{e(wa_msg)}" aria-label="Chat on WhatsApp">{WA_SVG}</a>' if whatsapp else ''}
+<div class="mobile-bar{'' if whatsapp else ' solo'}">{wa(wa_msg, 'WhatsApp') if whatsapp else ''}<a class="btn btn-primary" href="{mobile_cta[1]}">{mobile_cta[0]}</a></div>
 <script>window.WA="{SITE['whatsapp']}"</script><script src="/site.js"></script>
 </body></html>'''
     write(path, page)
@@ -272,7 +299,7 @@ def page_hero(eyebrow, title, intro, img):
 def cta_band(title='Tell us your dates. We’ll send your itinerary and price.', msg='Hello! I’d like a quote for a Moldova tour.'):
     return f'''<section class="cta-band"><div class="wrap"><div><h2>{e(title)}</h2>
 <p>Free, no obligation. Or call {SITE['phone']}.</p></div><div class="ctas">
-<a class="btn btn-primary" href="/plan-my-trip/">Get a free quote</a>{wa(msg)}</div></div></section>'''
+<a class="btn btn-primary" href="{QUOTE}">Get a free quote</a>{wa(msg)}</div></div></section>'''
 
 
 ORG_LD = {'@context': 'https://schema.org', '@type': 'TravelAgency', 'name': 'Enjoy Moldova by Solei Tourism', 'foundingDate': '2001',
@@ -290,7 +317,7 @@ FQ = {  # question, answer, optional "read more" link
     'passport': ('Do I need a passport for Transnistria?', 'Yes. Border formalities apply when entering Transnistria, so please bring your passport.', None),
     'languages': ('Which languages do your guides speak?', 'Our guides are licensed and speak English. Other languages are available on request.', None),
     'oneday': ('I only have one day. What do you recommend?', 'Pick one of our wine tours and tastings, for example Mileștii Mici or Cricova, or a day trip combining a winery with a cultural site.', '/plan-your-trip/cricova-vs-milestii-mici/'),
-    'quote': ('How do I get a price for my dates?', 'Send a short request with your dates and group size, or build your trip online. We reply by email with your itinerary and package price.', '/plan-my-trip/'),
+    'quote': ('How do I get a price for my dates?', 'Send a short request with your dates and group size. We reply by email with your itinerary and package price.', QUOTE),
 }
 
 
@@ -370,7 +397,7 @@ def descent():
 <div class="wrap d-facts"><p class="eyebrow light d-eyebrow">Take a breath. We’re going 80 m down.</p>{items}
 <div class="d-fact d-end"><p class="d-big">−80 m</p><h2>1.5 million bottles.<br>One Guinness record.</h2>
 <p>The largest wine collection in the world rests in the dark at Mileștii Mici. Come and taste it.</p>
-<div class="ctas"><a class="btn btn-primary" href="/tours/wine-tours/">Explore wine tours</a><a class="btn btn-ghost" href="/plan-my-trip/">Build my trip</a></div></div></div>
+<div class="ctas"><a class="btn btn-primary" href="/tours/wineries/">Choose your winery</a><a class="btn btn-ghost" href="{QUOTE}">Get a free quote</a></div></div></div>
 <p class="d-hint" aria-hidden="true">Scroll to descend ↓</p></div></section><div id="after-descent"></div>'''
 
 
@@ -693,13 +720,18 @@ def post_card(p):
 
 
 HOME_FAQ = ['prices', 'safe', 'cancel', 'pickup', 'quote']
-BESTSELLERS = ['culturewineandgastronomytour', 'milestii-mici-wine-cellars-and-private-gallery-by-petru-costin', 'trip-to-transnistria',
-               'old-orhei-complex-and-chateau-vartely-winery', 'wine-and-gastronomy', 'purcari-winery-and-the-medieval-church']
+# 1-day trips only: the multi-day programmes moved to "For travel agencies" (new site menu, 11.2026)
+BESTSELLERS = ['milestii-mici-wine-cellars-and-private-gallery-by-petru-costin', 'cricova-winery-and-orheiul-vechi-tour', 'trip-to-transnistria',
+               'old-orhei-complex-and-chateau-vartely-winery', 'purcari-winery-and-the-medieval-church', 'capriana-monastery']
+GOOGLE_REVIEWS = 'https://www.google.com/search?q=Enjoy+Moldova+by+Solei+Tourism+reviews'  # ponytail: search link until the Google Business profile link arrives
 
 
 def home():
     best = [BY_SLUG[s] for s in BESTSELLERS]
-    cat_chips = ''.join(f'<a class="chip" href="/tours/{k}/">{ic(CAT_ICON[k])}{v["name"]} <small>{sum(k in t["cats"] for t in TOURS)}</small></a>' for k, v in CATEGORIES.items())
+    n_day = sum(t['kind'] == 'day' and t['slug'] != 'wine-tastings' for t in TOURS)
+    cat_chips = (f'<a class="chip" href="/tours/day-trips/">{ic("f-sun")}1-day trips <small>{n_day}</small></a>'
+                 f'<a class="chip" href="/tours/wineries/">{ic("f-glass")}Wineries &amp; wine tastings <small>13</small></a>'
+                 f'<a class="chip" href="/destinations/">{ic("f-route")}Destinations</a>')
     n_places = len(DESTINATIONS) + len(POIS)
     proof = [('2001', 'organising trips in Moldova, from Chișinău'), ('Awarded', 'Best Inbound Travel Agency in the Republic of Moldova, more than once'),
              ('13', 'partner wineries for tastings, from Guinness-record cellars to family estates'), (str(n_places), 'places on our map: wineries, monasteries, fortresses')]
@@ -708,17 +740,14 @@ def home():
     body = f"""
 <section class="hero" style="--hero:url({rsrc('/img/hero-river.jpg', 1600)});--hero-sm:url({rsrc('/img/hero-river.jpg', 960)})"><div class="wrap">
 <p class="eyebrow light">Wine · Culture · Gastronomy</p>
-<h1>Discover Moldova, <em>one glass at a time</em></h1>
+<h1>Discover Moldova with Enjoy Moldova <em>– your local DMC!</em></h1>
 <p>Private tours to the world’s biggest wine cellars, cave monasteries, Gagauz villages and the Soviet time capsule of Transnistria, planned around your dates.</p>
-<div class="ctas"><a class="btn btn-primary" href="/plan-my-trip/">Get a free quote</a>{wa('Hello! I’d like to plan a trip to Moldova.')}</div>
+<div class="ctas"><a class="btn btn-primary" href="{QUOTE}">Get a free quote</a>{wa('Hello! I’d like to plan a trip to Moldova.')}</div>
 <div class="trust"><span>Local tour operator since 2001</span><span>Awarded Best Inbound Travel Agency in Moldova</span><span>Licensed guides</span></div>
 </div></section>
-<div class="wrap quote-bar"><a class="teaser" href="/plan-my-trip/"><span class="t-glass">{GLASS_SVG.format(id='bowl-t')}</span>
-<span class="t-text"><b>Not sure where to start?</b>Build your Moldova trip in 60 seconds: who’s coming, what you love, how many days.</span>
-<span class="btn btn-primary">Build my trip</span></a></div>
 
 <section class="section"><div class="wrap">
-<div class="head-row"><div><p class="eyebrow">Most booked</p><h2>Our bestsellers</h2></div><a class="more" href="/tours/">All {len(TOURS)} tours →</a></div>
+<div class="head-row"><div><p class="eyebrow">Most booked</p><h2>Popular 1-day trips</h2></div><a class="more" href="/tours/day-trips/">All {n_day} day trips →</a></div>
 <div class="grid g3 rail">{''.join(card(t) for t in best)}</div>
 <div class="chips cat-chips" aria-label="Browse tours by type"><span>Browse:</span>{cat_chips}</div>
 </div></section>
@@ -734,13 +763,15 @@ def home():
 <p class="tagline">{TAGLINE}</p>
 <div class="proof-nums">{''.join(f'<div><b>{n}</b><span>{e(t)}</span></div>' for n, t in proof)}</div>
 <div class="benefits">{''.join(f'<div>{ic(i)}<b>{h}</b><span>{x}</span></div>' for i, h, x in benefits)}</div>
-<div class="todo dark"><b>De completat: recenzii reale</b>Aici vin 3 recenzii scurte Google / TripAdvisor (nume, țară, stele) și ratingul total.</div>
+<div class="reviews"><div><h3>What our travellers say</h3><p>Read the reviews of Enjoy Moldova by Solei Tourism on Google, or leave your own after your trip.</p></div>
+<a class="btn btn-ghost" href="{GOOGLE_REVIEWS}" rel="noopener" target="_blank">Read our Google reviews →</a></div>
+<div class="todo dark"><b>De completat: recenzii reale</b>3 recenzii scurte de pe Google (nume, țară, stele), ratingul total și link-ul exact la profilul Google al companiei.</div>
 </div></section>
 
 <section class="section"><div class="wrap">
 <div class="center head"><p class="eyebrow">How it works</p><h2>From idea to trip in 3 steps</h2></div>
 <div class="grid g3 steps">
-<div class="step"><h3>Tell us what you like</h3><p>Build your trip online, send a short request or message us on WhatsApp.</p></div>
+<div class="step"><h3>Tell us what you like</h3><p>Send a short request with your dates, or message us on WhatsApp.</p></div>
 <div class="step"><h3>Get your itinerary &amp; price</h3><p>We reply by email with a tailored programme and a clear package price.</p></div>
 <div class="step"><h3>Enjoy Moldova</h3><p>Your guide and driver pick you up. Transport, guide and tastings are all set.</p></div>
 </div></div></section>
@@ -753,18 +784,62 @@ def home():
            'Private wine, culture and gastronomy tours in Moldova since 2001: Cricova, Mileștii Mici, Purcari, Orheiul Vechi, Gagauzia and Transnistria. Get a free quote.',
            body, [ORG_LD, faq_ld(HOME_FAQ)])
 
+def soon_chip(label):
+    return f'<span class="chip off" aria-disabled="true">{e(label)}<small class="soon-tag">soon</small></span>'
+
+
+DAY_TRIPS = [t for t in TOURS if t['kind'] == 'day' and t['slug'] != 'wine-tastings']
+MULTI = [t for t in TOURS if t['kind'] == 'multi']
+
+
 def tours_index():
-    chips = '<button class="chip on" data-filter="all">All tours</button>' + ''.join(
-        f'<button class="chip" data-filter="{k}">{ic(CAT_ICON[k])}{v["name"]}</button>' for k, v in CATEGORIES.items())
-    body = page_hero('Tours', 'All tours in Moldova', 'Multi-day tours and private day trips from Chișinău. Every tour can be adjusted to your dates and interests.', '/img/cricova.jpg') + f'''
+    """Tours = Popular tours (1-day trips live; weekend trips and city breaks soon) + Wineries + By interest (soon)."""
+    popular = (f'<a class="chip on" href="/tours/day-trips/">{ic("f-sun")}1-day trips <small>{len(DAY_TRIPS)}</small></a>'
+               + soon_chip('Weekend trips (2–3 days)') + soon_chip('City breaks'))
+    interest = ''.join(soon_chip(n) for n in ('Wine tours', 'Culture & heritage', 'Nature & countryside', 'Active trips'))
+    body = page_hero('Tours', 'Tours in Moldova', 'Private 1-day trips from Chișinău and wine tastings at 13 wineries. Every tour can be adjusted to your dates.', '/img/cricova.jpg') + f'''
 <section class="section"><div class="wrap">{crumbs(('Tours', None))}
-<div class="chips js-filter" role="group" aria-label="Filter tours">{chips}</div>
-<div class="grid g3 js-items">{''.join(card(t) for t in TOURS)}</div>
-<p class="empty" hidden><b>No tours match this filter.</b> Try another category or <a href="/tours/">see all tours</a>.</p>
+<div class="tour-filters">
+<div><h3>Popular tours</h3><div class="chips">{popular}</div></div>
+<div><h3>Wineries &amp; wine tastings</h3><div class="chips"><a class="chip" href="/tours/wineries/">{ic("f-glass")}Choose your winery <small>13</small></a></div></div>
+<div><h3>By interest</h3><div class="chips">{interest}</div></div></div>
+<h2 class="mb mt">1-day trips from Chișinău</h2>
+<div class="grid g3">{''.join(card(t) for t in DAY_TRIPS)}</div>
+<p class="small mt">Prices are being updated for 2027. Travel agency? See our <a href="/travel-agencies/tour-samples/">customized tour samples</a>.</p>
 </div></section>{cta_band('Not sure which tour fits? We’ll suggest one.')}'''
-    layout('/tours/', 'Moldova Tours: Multi-day Tours & Day Trips | Enjoy Moldova',
-           'All tours in Moldova: wine tours and tastings, culture and heritage, nature and countryside. Private day trips from €75 per person and multi-day tours from €655.',
+    layout('/tours/', 'Tours in Moldova: 1-Day Trips & Wine Tastings | Enjoy Moldova',
+           'Private 1-day trips from Chișinău and wine tastings at 13 Moldovan wineries: Cricova, Mileștii Mici, Purcari, Château Vartely and more.',
            body, [crumbs_ld(('Tours', '/tours/'))])
+
+
+def wineries_page():
+    """Wineries & wine tastings: only the list of wineries (a short description per winery will follow)."""
+    t = BY_SLUG['wine-tastings']
+    grid = ''.join(f'''<a class="winery js-wa" href="#" data-msg="{e("Hello! I’m interested in a tour and tasting at " + w + ".")}">{ic("f-glass")}{e(w)}<small>Ask for price →</small></a>''' for w in t['wineries'])
+    body = page_hero('Tours', 'Wineries & wine tastings', 'Choose a winery: we arrange the tasting, the transport and a guide.', '/img/milestii-mici.jpg') + f'''
+<section class="section"><div class="wrap">{crumbs(('Tours', '/tours/'), ('Wineries & wine tastings', None))}
+<h2 class="mb">Choose your winery</h2><div class="wineries-grid">{grid}</div>
+<div class="todo mt"><b>De completat: ofertele actuale (PDF) și o descriere scurtă a fiecărei crame</b>Mai târziu, unde se poate, rezervare online.</div>
+</div></section>{cta_band('Which winery would you like to visit?', 'Hello! I’d like a wine tasting in Moldova.')}'''
+    layout('/tours/wineries/', 'Moldova Wineries & Wine Tastings | Enjoy Moldova',
+           'Wine tastings at 13 Moldovan wineries: Cricova, Mileștii Mici, Château Purcari, Castel Mimi, Château Vartely, Asconi and more. Ask for a price.',
+           body, [crumbs_ld(('Tours', '/tours/'), ('Wineries & wine tastings', '/tours/wineries/'))])
+
+
+def tour_samples():
+    """For travel agencies: the multi-day programmes, as samples to customise."""
+    body = page_hero('For travel agencies', 'Customized tour samples', 'Multi-day programmes we run for partner agencies. Every sample can be adjusted to your groups, dates and budget.', '/img/purcari.jpg') + f'''
+<section class="section"><div class="wrap">{crumbs(('For travel agencies', None), ('Customized tour samples', None))}
+<div class="grid g2">{''.join(card(t) for t in MULTI)}</div>
+<div class="contact-layout mt"><div class="prose"><h2>Working with us</h2><ul class="ticks">
+<li>A DMC based in Chișinău since 2001, repeatedly awarded Best Inbound Travel Agency in Moldova</li>
+<li>FIT and groups, with hotels, transport, guides and tastings arranged</li><li>One local contact for the whole programme</li></ul>
+<div class="todo"><b>De completat: „Why partner with us?”</b>Pagina e „coming soon” în meniu; textul îl pregătește echipa.</div></div>
+<div class="form-card" id="quote"><h2>Request a programme</h2><p class="small">Tell us the dates, group size and the sample you like.</p>{quote_form('custom', button='Request a proposal')}</div></div>
+</div></section>'''
+    layout('/travel-agencies/tour-samples/', 'Moldova Tour Samples for Travel Agencies | Enjoy Moldova DMC',
+           'Multi-day Moldova programmes for travel agencies: wine, gastronomy, culture and countryside. Customised for your groups by a local DMC since 2001.',
+           body, [ORG_LD])
 
 
 def category(k, c):
@@ -816,12 +891,33 @@ def dest_info(key, latlon, slugs):
     return facts_html, combine_html, near_html, day + multi
 
 
+def dest_by_type():
+    """The six destination types from the menu; a place is active when one of our tours goes there, otherwise "on request"."""
+    places = {k: (n, b, s, MAP_ICON.get(k, 'f-romb'), True) for k, n, _, b, _, s in DESTINATIONS}
+    places.update({k: (n, x, s, i, False) for k, n, _, _, i, x, s in POIS})
+    out = []
+    for key, name in DEST_TYPES:
+        rows = []
+        for k in DEST_TYPE[key]:
+            n, text, slugs, icon, main = places[k]
+            href = f'/destinations/{k}/' if main else (BY_SLUG[slugs[0]]['url'] if slugs else '')
+            title = f'<a href="{href}">{e(n)}</a>' if href else e(n)
+            state = (f'<span class="d-state on">In {len(slugs)} tour{"s" if len(slugs) > 1 else ""}</span>' if slugs
+                     else '<span class="d-state">On request</span>')
+            rows.append(f'<li class="{"" if slugs else "req"}">{ic(icon)}<div><b>{title}</b>{state}<br>{e(text)}</div></li>')
+        body = (f'<ul class="gtk">{"".join(rows)}</ul>' if rows else
+                '<div class="todo"><b>De completat: lista festivalurilor</b>Echipa trimite lista și o descriere scurtă a fiecăruia.</div>')
+        out.append(f'<section class="dest-type" id="{key}"><h2>{e(name)} <small>{len(rows) or ""}</small></h2>{body}</section>')
+    return f'''<section class="section pt0"><div class="wrap"><h2 class="mb">Destinations by type</h2>
+<div class="chips mb">{''.join(f'<a class="chip" href="#{k}">{e(n)}</a>' for k, n in DEST_TYPES)}</div>
+<p class="small mb"><span class="d-state on">In our tours</span> places we visit on our tours · <span class="d-state">On request</span> we arrange a visit on request.</p>
+<div class="dest-types">{''.join(out)}</div></div></section>'''
+
+
 def destinations_page():
-    cards = ''.join(f'''<a class="card dest-card" href="{'/about-moldova/chisinau/' if k == 'chisinau' else f'/destinations/{k}/'}"><div class="ph">{pic(img, n)}</div>
-<div class="body"><h3>{e(n)}</h3><p class="meta">{e(b)}</p><div class="foot"><span class="more">{f'{len(s)} tours →' if s else 'Start here →'}</span></div></div></a>''' for k, n, _, b, img, s in DESTINATIONS)
     body = page_hero('Destinations', 'Explore Moldova on the map', 'From the fortress of Soroca in the north to Gagauzia in the south: every place we take you, on one map.', '/img/orheiul-vechi.jpg') + f'''
 <section class="section"><div class="wrap">{crumbs(('Destinations', None))}{moldova_map(page_links=True)}</div></section>
-<section class="section pt0"><div class="wrap"><h2 class="mb">All destinations</h2><div class="grid g3">{cards}</div></div></section>{cta_band()}'''
+{dest_by_type()}{cta_band()}'''
     layout('/destinations/', 'Moldova Destinations Map: Wineries, Monasteries & Regions | Enjoy Moldova',
            'Interactive map of Moldova’s best places: Cricova, Mileștii Mici, Orheiul Vechi, Soroca, Purcari, Gagauzia and Transnistria, with the tours that go there.', body)
     for key, name, latlon, blurb, img, slugs in DESTINATIONS:
@@ -867,8 +963,12 @@ def text_to_html(slug, text):
     return '\n'.join(out)
 
 
-def content_page(key, section, title, intro, src_slug):
-    src = SITE_PAGES.get(src_slug, {})
+def content_page(key, section, title, intro, src_slugs):
+    # one or more old pages merged into this one: each keeps its own heading
+    srcs = [SITE_PAGES.get(sl, {}) for sl in src_slugs]
+    text = ''.join((f'<h2>{e(src["text"].strip().splitlines()[0].strip())}</h2>' if len(srcs) > 1 else '') + text_to_html(sl, src.get('text', ''))
+                   for sl, src in zip(src_slugs, srcs))
+    src = {'images': [i for x in srcs for i in x.get('images', [])]}
     sec_name = 'About Moldova' if section == 'about-moldova' else 'Useful info'
     siblings = ''.join(f'<a class="{"on" if k == key else ""}" href="/{k}/">{e(v[1])}</a>' for k, v in PAGES.items() if v[0] == section)
     # the live site only keeps the resized copies of these old uploads (the full-size files return 404)
@@ -880,7 +980,7 @@ def content_page(key, section, title, intro, src_slug):
     body = page_hero(sec_name, title, intro, hero) + f'''
 <section class="section"><div class="wrap">{crumbs(('Plan your trip', '/plan-your-trip/'), (sec_name, f'/{section}/'), (title, None))}
 <div class="side-layout"><aside class="side"><h4>{sec_name}</h4>{siblings}<h4>Before you go</h4>{''.join(f'<a href="{u}">{e(n)}</a>' for u, n in BEFORE_YOU_GO)}</aside>
-<article class="prose">{text_to_html(src_slug, src.get('text', ''))}{f'<div class="pics">{pics}</div>' if pics else ''}</article></div>
+<article class="prose">{text}{f'<div class="pics">{pics}</div>' if pics else ''}</article></div>
 {f'<div class="mt">{rel_html}</div>' if rel_html else ''}
 </div></section>{cta_band()}'''
     layout(f'/{key}/', f'{title} | Enjoy Moldova', intro, body, [crumbs_ld(('Plan your trip', '/plan-your-trip/'), (sec_name, f'/{section}/'), (title, f'/{key}/'))])
@@ -910,9 +1010,9 @@ def plan_hub():
     group = lambda h, items: f'<h2 class="mb">{h}</h2><div class="grid g3 mb2">' + ''.join(
         f'<a class="card link-card" href="{u}"><div class="body">{ic(i, "ic ic-lg ic-c")}<h3>{e(n)}</h3><p class="meta">{e(d)}</p><div class="foot"><span class="more">Read →</span></div></div></a>' for u, n, d, i in items) + '</div>'
     before = [('/plan-your-trip/is-moldova-safe/', 'Is Moldova safe?', 'Official travel advice, Transnistria and everyday tips.', '/img/capriana.jpg'),
-              ('/plan-your-trip/moldova-itinerary/', 'Moldova in 3, 5 or 7 days', 'Ready-made itineraries with real prices.', '/img/monastery-aerial.jpg'),
+              ('/plan-your-trip/moldova-itinerary/', 'Moldova in 3, 5 or 7 days', 'Ready-made itineraries from Chișinău.', '/img/monastery-aerial.jpg'),
               ('/plan-your-trip/cricova-vs-milestii-mici/', 'Cricova or Mileștii Mici?', 'The two underground wine cities, compared.', '/img/milestii-mici.jpg'),
-              ('/plan-my-trip/', 'Build my trip', 'Get a suggested itinerary and price in 60 seconds.', '/img/wine-tasting-table.jpg')]
+              ('/about-moldova/facts/', 'Facts about Moldova', 'Four seasons, three rivers and a long history: the country in short.', '/img/wine-tasting-table.jpg')]
     # the four guides get photos in a 2×2 grid (no lone card in a row); the reference pages stay text cards
     guides = '<h2 class="mb">Before you go</h2><div class="grid g2 mb2">' + ''.join(
         f'<a class="card guide-card" href="{u}"><div class="ph">{pic(img, "", sizes="(max-width: 640px) 90vw, 560px")}</div><div class="body"><h3>{e(n)}</h3><p class="meta">{e(d)}</p><div class="foot"><span class="more">Read →</span></div></div></a>'
@@ -960,20 +1060,19 @@ def itinerary_page():
             t = BY_SLUG[s]
             note = ' <span class="small">· passport needed</span>' if s in TRANSNISTRIA_TOURS else ''
             days.append(f'''<li><span class="pimg" style="background-image:url('{rsrc(t['images'][0], 480)}')"></span><div><span class="day">Day {n}</span>
-<h4><a href="{t['url']}">{e(t['title'])}</a>{note}</h4><p class="small">{e(t['summary'])}</p></div><span class="pp">€{t['price2']}<small>per person for 2</small></span></li>''')
+<h4><a href="{t['url']}">{e(t['title'])}</a>{note}</h4><p class="small">{e(t['summary'])}</p></div></li>''')
         if name == '7 days':
             days.append('<li class="free"><span class="day">Day 7</span><h4>Free day and departure</h4><p class="small">Markets, cafés and a last glass in Chișinău.</p></li>')
-        total = sum(BY_SLUG[s]['price2'] for s in slugs)
         blocks.append(f'''<h2 id="{name.split()[0]}-days">Moldova in {name}</h2><p>{e(intro)}</p><ol class="plan">{''.join(days)}</ol>
-<div class="est"><div><small>Day trips for 2 travellers</small><b>€{total} per person</b><small>Private transport, licensed guide, listed entry fees and tastings. Hotels not included.</small></div>
-<a class="btn btn-primary" href="/plan-my-trip/">Customise this trip</a></div>''')
+<div class="est"><div><small>Price for your dates</small><b>On request</b><small>Private transport, licensed guide, listed entry fees and tastings. Hotels not included.</small></div>
+<a class="btn btn-primary" href="{QUOTE}">Customise this trip</a></div>''')
     alt = BY_SLUG['wine-and-gastronomy']
-    body = f'''<p>Three ready-made plans built from our private day trips, with real prices for two travellers. Each one starts and ends in Chișinău, so you keep the same hotel.</p>
+    body = f'''<p>Three ready-made plans built from our private day trips. Each one starts and ends in Chișinău, so you keep the same hotel. Ask us for the price for your dates and group.</p>
 <p class="toc"><a href="#3-days">3 days</a> · <a href="#5-days">5 days</a> · <a href="#7-days">7 days</a></p>
 {''.join(blocks)}
-<div class="alt">Prefer everything arranged, hotels included? Take the <a href="{alt['url']}">{e(alt['title'])}</a> ({e(alt['duration'])}), from €{alt['price_from']} per person.</div>
+<div class="alt">Prefer everything arranged, hotels included? Ask us about a multi-day programme like the <a href="{alt['url']}">{e(alt['title'])}</a> ({e(alt['duration'])}).</div>
 <p class="small">Opening days: the Petru Costin Gallery is open Wednesday to Sunday; the Purcari tour runs Tuesday to Sunday. We plan the order around them.</p>'''
-    article('/plan-your-trip/moldova-itinerary/', 'Plan your trip', 'Moldova in 3, 5 or 7 days', 'Ready-made itineraries from Chișinău, with real prices.', '/img/orheiul-vechi.jpg', body)
+    article('/plan-your-trip/moldova-itinerary/', 'Plan your trip', 'Moldova in 3, 5 or 7 days', 'Ready-made itineraries from Chișinău.', '/img/orheiul-vechi.jpg', body)
 
 
 def cricova_vs_milestii():
@@ -990,7 +1089,7 @@ def cricova_vs_milestii():
 <h2>Choose Cricova if…</h2><ul class="ticks"><li>you love sparkling wine and want to see how it’s made</li><li>you’d like elegant tasting halls</li><li>you want to combine it with the cave monastery of Orheiul Vechi on the same day</li></ul>
 <h2>Choose Mileștii Mici if…</h2><ul class="ticks"><li>you want to see a Guinness record with your own eyes</li><li>you’re curious about the Soviet past: the trip includes the Petru Costin Gallery</li><li>you’d like to add Căpriana, the oldest monastery in Moldova</li></ul>
 <h2>Why not both?</h2><p>They complement each other well. Our <a href="{BY_SLUG['culturewineandgastronomytour']['url']}">Culture, Wine &amp; Gastronomy Tour</a> includes both, or ask us to fit both into your stay.</p>
-<p><a class="btn btn-primary" href="/plan-my-trip/">Build my trip</a></p>'''
+<p><a class="btn btn-primary" href="{QUOTE}">Get a free quote</a></p>'''
     article('/plan-your-trip/cricova-vs-milestii-mici/', 'Plan your trip', 'Cricova or Mileștii Mici?', 'The two underground wine cities of Moldova, compared.', '/img/milestii-mici.jpg', body,
             ['cricova-winery-and-orheiul-vechi-tour', 'milestii-mici-wine-cellars-and-private-gallery-by-petru-costin', 'culturewineandgastronomytour'])
 
@@ -1135,8 +1234,9 @@ def groups_page():
                 ('f-star', 'Events & sport', 'MICE, festivals and special event tours. More than 20 years of travel arrangements for football teams.'),
                 ('f-bowl', 'Catering', 'Group meals, wine dinners and tastings at partner wineries.'),
                 ('f-bird', 'Guides', 'Licensed guides; English and other languages on request.')]
-    body = page_hero('For groups & partners', 'Groups, MICE & travel agents', 'Your local partner in Moldova since 2001: transport, hotels, guides, events and tailor-made programmes.', '/img/cricova.jpg') + f'''
-<section class="section"><div class="wrap">{crumbs(('About', '/about-us/'), ('Groups, MICE & agents', None))}
+    body = page_hero('MICE & Business Travel', 'MICE & Business Travel', 'Your local partner in Moldova since 2001: transport, hotels, venues, events and sport travel.', '/img/cricova.jpg') + f'''
+<section class="section"><div class="wrap">{crumbs(('MICE & Business Travel', None))}
+<div class="todo mb"><b>Coming soon: Why choose Moldova? · Our services · Hotels &amp; venues · Sport travel</b>Echipa pregătește textele (serviciile vor fi diferite de cele din About us). Până atunci rămân serviciile de mai jos.</div>
 <div class="grid g3">{''.join(f'<div class="feat">{ic(i, "ic ic-lg ic-c")}<h3>{h}</h3><p>{p}</p></div>' for i, h, p in services)}</div>
 <div class="contact-layout mt"><div class="prose"><h2>Why work with us</h2><ul class="ticks">
 <li>A DMC based in Chișinău since 2001, repeatedly awarded Best Inbound Travel Agency in Moldova</li>
@@ -1145,7 +1245,7 @@ def groups_page():
 <p>Call {SITE['phone']} or write to <a href="mailto:{SITE['email']}">{SITE['email']}</a>.</p></div>
 <div class="form-card" id="quote"><h2>Request a group proposal</h2><p class="small">Tell us the dates, group size and what the group needs.</p>{quote_form('custom', button='Request a proposal')}</div></div>
 </div></section>'''
-    layout('/groups-mice/', 'Groups, MICE & Travel Agents in Moldova | Enjoy Moldova DMC', 'Moldova DMC since 2001: group tours, MICE, events, transfers, hotels and guides for travel agents and companies.', body, [ORG_LD])
+    layout('/groups-mice/', 'MICE & Business Travel in Moldova | Enjoy Moldova DMC', 'Moldova DMC since 2001: MICE, events, business travel, transfers, hotels, venues and sport travel.', body, [ORG_LD])
 
 
 def contact():
@@ -1159,12 +1259,11 @@ def contact():
 <li>{ic('f-bird')}<div><b>Phone</b><a href="{SITE['phone_href']}">{SITE['phone']}</a></div></li>
 <li>{ic('f-romb')}<div><b>Email</b><a href="mailto:{SITE['email']}">{SITE['email']}</a></div></li>
 <li>{ic('f-sun')}<div><b>Office hours</b>{SITE['hours']} (Chișinău time, GMT+2)</div></li></ul>
-<p>{wa('Hello! I’d like to plan a trip to Moldova.')}</p>
 <div class="map"><iframe title="Office map" loading="lazy" src="https://maps.google.com/maps?q={q.replace(' ', '+')}&amp;output=embed"></iframe></div>
 </div>
-<div class="form-card" id="quote"><h2>Get a free quote</h2><p class="small">Takes about 1 minute. Or <a href="/plan-my-trip/">build your trip step by step</a>.</p>{quote_form()}</div>
+<div class="form-card" id="quote"><h2>Get a free quote</h2><p class="small">Takes about 1 minute.</p>{quote_form()}</div>
 </div></div></section>'''
-    layout('/contact/', 'Contact Enjoy Moldova | Get a Free Tour Quote', f'Contact Enjoy Moldova in Chișinău: {SITE["phone"]}, {SITE["email"]}. Get a free quote for your tour of Moldova.', body, [ORG_LD])
+    layout('/contact/', 'Contact Enjoy Moldova | Get a Free Tour Quote', f'Contact Enjoy Moldova in Chișinău: {SITE["phone"]}, {SITE["email"]}. Get a free quote for your tour of Moldova.', body, [ORG_LD], whatsapp=False)
 
 
 def legal(path, title, intro, html_body):
@@ -1296,7 +1395,7 @@ if __name__ == '__main__':
     section_index('useful-info', 'Useful info', 'Practical information for your trip: phone numbers, customs, borders and embassies.', '/img/capriana.jpg')
     for k, v in PAGES.items(): content_page(k, *v)
     plan_hub(); safety_page(); itinerary_page(); cricova_vs_milestii()
-    blog(); about_us(); groups_page(); contact(); legal_pages(); thank_you(); not_found()
+    blog(); about_us(); groups_page(); wineries_page(); tour_samples(); contact(); legal_pages(); thank_you(); not_found()
     builder_page(); destinations_page()
     n = redirects()
     k = design_kit()
