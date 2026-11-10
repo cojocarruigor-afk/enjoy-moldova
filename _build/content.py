@@ -175,9 +175,65 @@ PAGES = {
     'about-moldova/facts': ('about-moldova', 'Facts about Moldova', 'Between Romania and Ukraine, a small country with four seasons, three rivers and a long history.', ['moldova']),
     'about-moldova/chisinau': ('about-moldova', 'Chișinău', 'One of the greenest capitals in Europe, and the starting point of every tour.', ['chisinau']),
     'about-moldova/moldovan-cuisine': ('about-moldova', 'Our cuisine', 'Balkan, Turkish, Slavic and Romanian influences on one table.', ['moldavian-cuisine']),
-    'plan-your-trip/general-advice': ('useful-info', 'General advice', 'Emergency numbers, useful contacts and the foreign embassies in Chișinău.', ['emmergency-calls', 'embassies-in-the-republic-of-moldova']),
-    'plan-your-trip/passport-visa': ('useful-info', 'Passport & visa', 'Where to ask about visas: the embassies and consulates of Moldova abroad.', ['embassies-of-the-republic-of-moldova']),
-    'plan-your-trip/customs-border-points': ('useful-info', 'Customs rules & border crossing points', 'What you can bring in and take out, and where to cross the border.', ['customs-rules', 'border-points']),
+    'plan-your-trip/general-advice': ('useful-info', 'General advice', 'Money, time, language, getting around, safety and useful numbers.', ['embassies-in-the-republic-of-moldova']),
+    'plan-your-trip/passport-visa': ('useful-info', 'Passport & visa', 'Who needs a visa, what your passport needs and what to show at the border.', ['embassies-of-the-republic-of-moldova']),
+    'plan-your-trip/customs-border-points': ('useful-info', 'Customs rules & border crossing points', 'The official rules, from the Customs Service and the Border Police.', []),
+    'plan-your-trip/festivals-holidays': ('useful-info', 'Festivals & holidays', 'Wine festivals, spring traditions and village feasts through the year.', []),
+    'about-us/our-services': ('about-us', 'Our services', 'Everything for your trip to Moldova, from one local team.', []),
+    'about-us/transportation': ('about-us', 'Transportation services', 'Any vehicle for your trip, on time and with professional drivers.', []),
+}
+
+# Texts written for the new menu (approved by Igor, 10.11.2026). Sources: the current site, the blog, mfa.gov.md and
+# border.gov.md (read 10.11.2026). Anything not found in an official source stays out, in a "de confirmat" box.
+PAGE_TEXT = {
+    'plan-your-trip/general-advice': '''<h2>Money</h2><p>The currency is the Moldovan leu (MDL). Cards are widely accepted in Chișinău; carry some cash in lei for villages, markets and small wineries. Transnistria has its own currency, so ask us before a trip there.</p>
+<h2>Time and language</h2><p>Moldova is on Chișinău time, GMT+2. Romanian is the official language and Russian is widely spoken. Your guide speaks English; other languages on request.</p>
+<h2>Getting around</h2><p>Use arranged transfers or app-based taxis. We can organise your airport transfer and private transport for every tour.</p>
+<h2>Safety</h2><p>Violent crime against tourists is rare. Keep valuables close in markets and on public transport. Before a trip to Transnistria, read your government’s travel advice. <a href="/plan-your-trip/is-moldova-safe/">Is Moldova safe? →</a></p>
+<h2>Emergency and useful numbers</h2>
+<table class="info"><tr><td>Emergency: police, fire, ambulance</td><td><a href="tel:112">112</a></td></tr><tr><td>Private emergency medical service</td><td><a href="tel:14112">14112</a></td></tr>
+<tr><td>Chișinău International Airport</td><td><a href="tel:+37322525111">(022) 52 51 11</a></td></tr><tr><td>Chișinău railway station</td><td><a href="tel:+37322832733">(022) 83 27 33</a></td></tr>
+<tr><td>Customs Service hotline</td><td><a href="tel:+37322279210">(022) 27 92 10</a></td></tr><tr><td>Lost and found office</td><td><a href="tel:+37322223340">(022) 22 33 40</a></td></tr></table>
+<div class="todo"><b>De confirmat</b>Numerele vin de pe site-ul vechi: de verificat înainte de lansare.</div>''',
+    'plan-your-trip/passport-visa': '''<h2>Who needs a visa</h2><p>Citizens of the European Union, the United Kingdom, the United States, Canada, Israel, Japan, Switzerland and Norway can enter Moldova without a visa. The full list is on the website of the Ministry of Foreign Affairs: <a href="https://www.mfa.gov.md/en/content/visa-regime-foreigners" rel="noopener">Visa regime for foreigners</a>.</p>
+<h2>Your passport</h2><p>It must be valid for at least 3 months after the day you leave Moldova, have at least two blank pages and have been issued in the last 10 years.</p>
+<h2>At the border</h2><p>You may be asked for the purpose of your trip and proof of your stay: a hotel booking or a booked tour, and a return ticket. Your booking confirmation from us helps.</p>
+<h2>Other nationalities</h2><p>Apply for a visa online on the official <a href="https://www.evisa.gov.md/" rel="noopener">E-Visa portal</a>.</p>
+<h2>Entering through Transnistria</h2><p>If you arrive from Ukraine through the Transnistrian section of the border, you must declare your entry within 72 hours at a migration office or a Public Services Agency office. We can help you with this.</p>
+<p class="small">Official sources: <a href="https://www.mfa.gov.md/en" rel="noopener">mfa.gov.md</a> · <a href="https://www.border.gov.md/" rel="noopener">border.gov.md</a></p>
+<div class="todo"><b>De confirmat</b>Câte zile se poate sta fără viză (90 din 180?), dacă cetățenii UE pot intra cu buletinul și dacă e nevoie de asigurare medicală: nu apar în paginile oficiale citite.</div>''',
+    'plan-your-trip/customs-border-points': '''<ul class="plus"><li><a href="https://www.customs.gov.md" rel="noopener">Customs Service of Moldova</a>: what you can bring in and take out</li>
+<li><a href="https://www.border.gov.md/" rel="noopener">Border Police</a>: border crossing points and rules for foreigners</li></ul>
+<h2>In short</h2><ul class="ticks"><li>Cash over €10,000 per person must be declared in writing.</li><li>Objects of cultural value need an authorisation to leave the country.</li></ul>''',
+    'plan-your-trip/festivals-holidays': '''<ul class="gtk">
+<li><div><b>Mărțișor · 1 March</b>The start of spring: red-and-white tokens worn for luck.</div></li>
+<li><div><b>Easter</b>The biggest family holiday, with painted eggs and village traditions.</div></li>
+<li><div><b>National Wine Day · first weekend of October, Chișinău</b>Almost every Moldovan winery in one square.</div></li>
+<li><div><b>Wine Vernissage</b>Tastings with the winemakers, several editions a year.</div></li>
+<li><div><b>Gustar · summer</b>Open-air music and wine festival.</div></li>
+<li><div><b>MustFest at Cricova · autumn</b>The grape harvest festival.</div></li>
+<li><div><b>Festivals of traditions</b>Duminica Mare, Iprosop (traditional towels), the Carpet Festival in Gagauzia, the Young Craftsman’s Festival, Bostaniada and the Medieval Festival in Soroca.</div></li></ul>
+<p><a class="more" href="/blog/category/festivals-traditions/">Festival stories on our blog →</a></p>
+<div class="todo"><b>De completat</b>Pozele (le trimiteți voi) și datele exacte pe 2027.</div>''',
+    'about-us/our-services': '''<ul class="ticks">
+<li><b>Tours and excursions</b> in Moldova, private and with a licensed guide</li>
+<li><b>Tailor-made packages</b> for individual travellers (FIT) and groups</li>
+<li><b>Combined tours with Romania and city breaks:</b> Bucharest, Iași, Chișinău, Tiraspol</li>
+<li><b>Accommodation</b> in Chișinău, across Moldova, in countryside guest houses and in Tiraspol</li>
+<li><b>Transport and transfers:</b> airport–hotel–airport, within Moldova and to neighbouring countries</li>
+<li><b>Flight tickets</b> (e-tickets)</li>
+<li><b>Business travel &amp; MICE</b></li>
+<li><b>Events and cultural tourism:</b> wine festival, music festivals, sport events</li>
+<li><b>Catering:</b> group meals, wine dinners, tastings</li>
+<li><b>Guide services</b> in English and other languages on request</li></ul>''',
+    'about-us/transportation': '''<ul class="gtk">
+<li><div><b>Cars, including VIP cars</b>For 1–3 travellers.</div></li>
+<li><div><b>Minivans</b>For 4–5 travellers.</div></li>
+<li><div><b>Minibuses</b>For 6–8 travellers.</div></li>
+<li><div><b>Coaches</b>For larger groups.</div></li>
+<li><div><b>Rent-a-car</b>On request.</div></li></ul>
+<p>Airport transfers, transport for tours across Moldova and transfers to neighbouring countries.</p>
+<div class="todo"><b>De completat</b>PDF-ul cu prezentarea mașinilor și capacitatea exactă a autocarelor.</div>''',
 }
 
 # ---- Clean URLs. Old WordPress slugs get a 301 redirect (written to REDIRECTS-301.csv and redirects.htaccess) ----

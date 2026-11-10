@@ -4,7 +4,7 @@ import json, os, re, html, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from content import (SITE, CATEGORIES, TOURS, PAGES, BLOG_CATS, INTERESTS, TRIP_TAGS, TRIP_ORDER, DESTINATIONS, NEW_SLUGS,
                      PAGE_REDIRECTS, CELLAR_TOURS, TRANSNISTRIA_TOURS, HIKING_TOURS, RELATED_TOURS, DEST_KEYWORDS, ITINERARIES, POIS, DEST_KIND,
-                     DEST_ROAD_KM, DEST_TYPE)
+                     DEST_ROAD_KM, DEST_TYPE, PAGE_TEXT)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -189,12 +189,14 @@ MENU = [
     ('Plan your trip', '/plan-your-trip/', [
         ('Before you go', [('Is Moldova safe?', '/plan-your-trip/is-moldova-safe/', False), ('Moldova in 3, 5 or 7 days', '/plan-your-trip/moldova-itinerary/', True),
                            ('Cricova or Mileștii Mici?', '/plan-your-trip/cricova-vs-milestii-mici/', True), ('Build my trip', None, False)]),
-        ('Useful info', [('General advice', '/plan-your-trip/general-advice/', False), ('Passport & visa', '/plan-your-trip/passport-visa/', False),
-                         ('Customs rules & border crossing points', '/plan-your-trip/customs-border-points/', False), ('Festivals & holidays', None, False)])]),
+        ('Useful info', [('General advice', '/plan-your-trip/general-advice/', True), ('Passport & visa', '/plan-your-trip/passport-visa/', True),
+                         ('Customs rules & border crossing points', '/plan-your-trip/customs-border-points/', True),
+                         ('Festivals & holidays', '/plan-your-trip/festivals-holidays/', True)])]),
     ('About', '/about-us/', [
         ('Moldova', [('Why Moldova?', '/about-moldova/why-moldova/', False), ('Facts about Moldova', '/about-moldova/facts/', True),
                      ('Chișinău', '/about-moldova/chisinau/', False), ('Our cuisine', '/about-moldova/moldovan-cuisine/', False)]),
-        ('About us', [('Get to know us', '/about-us/', False), ('Our services', None, False), ('Transportation services', None, False), ('Contact', '/contact/', True)])]),
+        ('About us', [('Get to know us', '/about-us/', True), ('Our services', '/about-us/our-services/', True),
+                      ('Transportation services', '/about-us/transportation/', True), ('Contact', '/contact/', True)])]),
     ('MICE & Business Travel', '/groups-mice/', [('MICE & Business Travel', [('Why choose Moldova?', None, False), ('Our services', '/groups-mice/', False),
                                                                           ('Hotels & venues', None, False), ('Sport travel', None, False)])]),
     ('For travel agencies', '/travel-agencies/tour-samples/', [('For travel agencies', [('Why partner with us?', None, False),
@@ -966,24 +968,26 @@ def text_to_html(slug, text):
 def content_page(key, section, title, intro, src_slugs):
     # one or more old pages merged into this one: each keeps its own heading
     srcs = [SITE_PAGES.get(sl, {}) for sl in src_slugs]
-    text = ''.join((f'<h2>{e(src["text"].strip().splitlines()[0].strip())}</h2>' if len(srcs) > 1 else '') + text_to_html(sl, src.get('text', ''))
-                   for sl, src in zip(src_slugs, srcs))
+    head = len(srcs) > 1 or key in PAGE_TEXT
+    text = PAGE_TEXT.get(key, '') + ''.join((f'<h2>{e(src["text"].strip().splitlines()[0].strip())}</h2>' if head else '') + text_to_html(sl, src.get('text', ''))
+                                            for sl, src in zip(src_slugs, srcs))
     src = {'images': [i for x in srcs for i in x.get('images', [])]}
-    sec_name = 'About Moldova' if section == 'about-moldova' else 'Useful info'
+    sec_name = {'about-moldova': 'About Moldova', 'useful-info': 'Useful info', 'about-us': 'About us'}[section]
+    sec_url = '/about-us/' if section == 'about-us' else f'/{section}/'
     siblings = ''.join(f'<a class="{"on" if k == key else ""}" href="/{k}/">{e(v[1])}</a>' for k, v in PAGES.items() if v[0] == section)
     # the live site only keeps the resized copies of these old uploads (the full-size files return 404)
     imgs = [i for i in src.get('images', []) if re.search(r'-\d+x\d+\.\w+$', i) and i not in DEAD][:3]
     pics = ''.join(f'<img src="{i}" alt="{e(title)}" loading="lazy">' for i in imgs)  # ponytail: hotlinked from live site
     rel = RELATED_TOURS.get(key)
     rel_html = f'<h2>Tours that include this</h2><div class="grid g3">{"".join(card(BY_SLUG[s]) for s in rel)}</div>' if rel else ''
-    hero = {'about-moldova': '/img/orheiul-vechi.jpg', 'useful-info': '/img/capriana.jpg'}[section]
+    hero = {'about-moldova': '/img/orheiul-vechi.jpg', 'useful-info': '/img/capriana.jpg', 'about-us': '/img/besalma.jpg'}[section]
     body = page_hero(sec_name, title, intro, hero) + f'''
-<section class="section"><div class="wrap">{crumbs(('Plan your trip', '/plan-your-trip/'), (sec_name, f'/{section}/'), (title, None))}
+<section class="section"><div class="wrap">{crumbs(*([] if section == 'about-us' else [('Plan your trip', '/plan-your-trip/')]), (sec_name, sec_url), (title, None))}
 <div class="side-layout"><aside class="side"><h4>{sec_name}</h4>{siblings}<h4>Before you go</h4>{''.join(f'<a href="{u}">{e(n)}</a>' for u, n in BEFORE_YOU_GO)}</aside>
 <article class="prose">{text}{f'<div class="pics">{pics}</div>' if pics else ''}</article></div>
 {f'<div class="mt">{rel_html}</div>' if rel_html else ''}
 </div></section>{cta_band()}'''
-    layout(f'/{key}/', f'{title} | Enjoy Moldova', intro, body, [crumbs_ld(('Plan your trip', '/plan-your-trip/'), (sec_name, f'/{section}/'), (title, f'/{key}/'))])
+    layout(f'/{key}/', f'{title} | Enjoy Moldova', intro, body, [crumbs_ld(*([] if section == 'about-us' else [('Plan your trip', '/plan-your-trip/')]), (sec_name, sec_url), (title, f'/{key}/'))])
 
 
 def section_index(section, title, intro, img):
@@ -1216,8 +1220,12 @@ def about_us():
 <div><b>2001</b><span>founded in Chișinău</span></div><div><b>20+ years</b><span>organising football team travel and events</span></div>
 <div><b>13</b><span>partner wineries for tastings</span></div><div><b>FIT &amp; groups</b><span>individual travellers and groups, tours and MICE</span></div></div></div></section>
 <section class="section"><div class="wrap">{crumbs(('About us', None))}
-<div class="about-intro"><h2>Your local team in Moldova</h2>
-<p class="lead">We plan the logistics and every detail of your trip, so you can simply enjoy it. Our guides help you understand local life, not just see the sights.</p></div>
+<div class="about-intro prose"><h2>Your local DMC since 2001</h2>
+<p class="lead">We started in Chișinău in 2001 as Solei-Turism and grew into one of the leading inbound travel companies in Moldova. We have been awarded Best Inbound Travel Agency in the Republic of Moldova more than once, most recently first place in inbound tourism at the Moldova Tourism Awards 2024.</p>
+<p>We plan the logistics and every detail of your trip, so you can simply enjoy it. We design each tour around you and match you with the best places, people and experiences. Our guides help you understand local life, not just see the sights.</p>
+<p>Our philosophy is simple: quality, satisfaction, integrity and efficiency. For more than 20 years we have also arranged travel for football teams and sport events.</p>
+<p>We work with individual travellers, groups, companies and travel agencies, and present Moldova every year at international fairs such as ITB Berlin.</p>
+<p><a class="more" href="/about-us/our-services/">Our services →</a> · <a class="more" href="/about-us/transportation/">Transportation →</a></p></div>
 <h2 class="mt mb">Our story</h2><ol class="timeline">{tl}</ol>
 <h2 class="mt">The people you’ll travel with</h2>
 <div class="todo"><b>De completat: echipa</b>3–6 oameni: o fotografie, numele, rolul și limbile vorbite. Oamenii reali sunt ce lipsește cel mai mult de pe site.</div>
