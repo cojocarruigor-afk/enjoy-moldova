@@ -15,7 +15,13 @@ Redirect 301 /tours/soroca-fortress-tour/ /tours/soroca-fortress-arta-rustica/
 Redirect 301 /tours/hiking-tour-tipova-saharna/ /tours/tipova-saharna-hiking/
 Redirect 301 /about-moldova/moldova/ /about-moldova/facts/
 Redirect 301 /about-moldova/moldavian-cuisine/ /about-moldova/moldovan-cuisine/
-Redirect 301 /useful-info/emmergency-calls/ /useful-info/emergency-numbers/
+Redirect 301 /useful-info/emmergency-calls/ /plan-your-trip/general-advice/
+Redirect 301 /useful-info/embassies-in-the-republic-of-moldova/ /plan-your-trip/general-advice/
+Redirect 301 /useful-info/embassies-of-the-republic-of-moldova/ /plan-your-trip/passport-visa/
+Redirect 301 /useful-info/customs-rules/ /plan-your-trip/customs-border-points/
+Redirect 301 /useful-info/border-points/ /plan-your-trip/customs-border-points/
+Redirect 301 /about-moldova/travel-to-moldova/ /about-moldova/why-moldova/
+Redirect 301 /about-moldova/top-tours-moldova/ /about-moldova/why-moldova/
 Redirect 301 /contacts/ /contact/
 Redirect 301 /2019/10/19/hello-world/ /privacy/
 Redirect 301 /tours-2/ /
