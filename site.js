@@ -281,3 +281,12 @@ if (summaryBox) {
   try { trip = sessionStorage.getItem('trip'); sessionStorage.removeItem('trip'); } catch {}
   if (trip) { $('pre', summaryBox).textContent = trip; summaryBox.hidden = false; }
 }
+
+// itinerary: "Open all" / "Close all"
+$$('.route-all').forEach(btn => btn.addEventListener('click', () => {
+  const list = btn.closest('.route-head').nextElementSibling;
+  const open = !btn.dataset.open;
+  $$('details', list).forEach(d => { d.open = open; });
+  btn.dataset.open = open ? '1' : '';
+  btn.textContent = (open ? 'Close all ' : 'Open all ') + (list.classList.contains('days') ? 'days' : 'stops');
+}));

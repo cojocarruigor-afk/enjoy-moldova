@@ -721,4 +721,48 @@ nav.main{gap:var(--s4);font-size:var(--fs-sm)}
 @media (max-width:1280px){nav.main{gap:var(--s3)}}
 @media (max-width:980px){.tour-filters,.dest-types{grid-template-columns:1fr}}
 
+/* ============ Client materials 13.11.2026: wineries, PDFs, MICE, sport travel ============ */
+.pdf-box{display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap;background:var(--card);border:1.5px solid var(--line);border-left:4px solid var(--wine);border-radius:var(--r);padding:var(--s4) var(--s5);margin:0 0 var(--s5)}
+.pdf-box .ic{color:var(--wine);flex:none}.pdf-box>div{flex:1;min-width:200px}.pdf-box b{display:block}.pdf-box span{color:var(--muted);font-size:var(--fs-sm)}
+.winery-list{display:grid;gap:var(--s6)}
+.winery-card{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:var(--s5);align-items:start;scroll-margin-top:100px;padding-top:var(--s5);border-top:1px solid var(--line)}
+.wc-ph{position:relative;aspect-ratio:3/1;border-radius:var(--r);overflow:hidden;background:var(--placeholder)}
+.winery-card .wc-ph{aspect-ratio:auto}.winery-card .wc-ph img{position:static;width:100%;height:auto;display:block}
+.wc-body h3{font-size:var(--fs-xl)}.wc-body h4{font-size:var(--fs-sm);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:var(--s3) 0 var(--s1);font-family:var(--sans)}
+.wc-meta{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;color:var(--muted);margin:var(--s1) 0 var(--s3)}.wc-meta .ic{color:var(--wine)}
+.wc-meta span{margin-left:auto;color:var(--ink)}.wc-meta span b{color:var(--wine);font-size:var(--fs-lg)}
+.wc-ctas{display:flex;gap:var(--s3);flex-wrap:wrap;margin-top:var(--s3)}
+.ticks.cols2{columns:2;column-gap:var(--s6)}
+.pdf-list{list-style:none;padding:0;display:grid;gap:0;max-width:720px}
+.pdf-list li{display:flex;align-items:center;gap:var(--s4);padding:var(--s3) 0;border-bottom:1px solid var(--line)}
+.pdf-list li>a:first-child{font-weight:600;flex:1;text-decoration:none}.pdf-list span{color:var(--muted);font-size:var(--fs-sm)}
+.mice-body h2{font-size:var(--fs-2xl);margin-bottom:var(--s3)}
+.tagline-dark{font-family:var(--serif);font-style:italic;color:var(--wine);font-size:var(--fs-lg)}
+.hotel-card{padding-top:var(--s5);margin-top:var(--s5);border-top:1px solid var(--line);scroll-margin-top:100px}
+.hotel-card h3{font-size:var(--fs-xl)}.stars{color:var(--gold);font-size:var(--fs-md);letter-spacing:2px}
+.hotel-card .dest-facts{grid-template-columns:1fr 3fr;margin:var(--s3) 0}
+.proof-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s4);margin:var(--s5) 0}
+.proof-mini b{display:block;font-family:var(--serif);font-size:var(--fs-3xl);color:var(--wine);line-height:1.1}.proof-mini span{color:var(--muted);font-size:var(--fs-sm)}
+.team-lists{display:grid;grid-template-columns:1fr 1fr;gap:var(--s6)}.team-lists h3{font-size:var(--fs-lg);margin-bottom:var(--s2)}
+.trusted{display:flex;align-items:center;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s5);color:var(--on-dark-muted)}.trusted .ic{color:var(--peach)}.trusted a{color:var(--peach);font-weight:600}
+@media (max-width:980px){.winery-card,.team-lists{grid-template-columns:1fr}.hotel-card .dest-facts{grid-template-columns:1fr}}
+@media (max-width:640px){.ticks.cols2{columns:1}.proof-mini{grid-template-columns:1fr 1fr 1fr}.proof-mini b{font-size:var(--fs-2xl)}.wc-meta span{margin-left:0;width:100%}}
+
+/* itinerary: one line per stop or day, opens on click */
+.route-head{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s3);flex-wrap:wrap}
+.route-all{background:none;border:0;color:var(--teal);font:inherit;font-size:var(--fs-sm);font-weight:600;cursor:pointer;padding:var(--s2) 0;min-height:44px}
+.route{list-style:none;padding:0;margin:var(--s3) 0 var(--s5);border-left:2px dashed var(--line);margin-left:15px}
+.route li{position:relative;padding-left:var(--s5)}
+.route details{border:0;border-bottom:1px solid var(--line)}
+.route details:first-of-type{border-top:0}
+.route summary{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) 0;justify-content:flex-start}
+.route summary::after{margin-left:auto}
+.route .n{position:absolute;left:-15px;display:grid;place-items:center;min-width:28px;height:28px;padding:0 6px;border-radius:var(--r-pill);background:var(--wine);color:var(--on-dark);font:600 var(--fs-xs) var(--sans)}
+.route.days .n{position:static;flex:none;min-width:56px;margin-left:-38px}
+.route .t{font-weight:600}.route .t small{display:block;font-weight:400;color:var(--muted);font-size:var(--fs-xs)}
+.route details>p,.route details>.prose{padding:0 0 var(--s4)}
+.route .prose p{margin-bottom:var(--s3)}
+.hook{font-size:var(--fs-lg);color:var(--ink)}
+.pdf-list .more{display:inline-block;padding:var(--s2) var(--s2);min-height:24px}
+
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
