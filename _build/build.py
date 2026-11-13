@@ -12,8 +12,27 @@ DATA = lambda f: json.load(open(os.path.join(HERE, 'data', f), encoding='utf8'))
 SITE_TOURS = DATA('tours_site.json')
 SITE_PAGES = {p['slug']: p for p in DATA('pages.json')}
 POSTS = DATA('posts.json')
+from content_2026 import (WINERIES_2026, WINERIES_ON_REQUEST, AGENCY_PDF, TASTE5_DAYS, AGENCY_TOUR_TYPES, DAY_TOURS_2026, NEW_DAY_TOURS,
+                          MICE_INTRO, MICE_PHILOSOPHY, MICE_WHY_MOLDOVA, MICE_SERVICES, MICE_WHY_US, MICE_HOTELS, SPORT_SINCE, SPORT_ASSOCIATIONS,
+                          SPORT_CLUBS, SPORT_SERVED, SPORT_SERVICES, SPORT_CATERING, SPORT_TRANSPORT, SPORT_TRAINING, SPORT_COORDINATION, SPORT_TIRASPOL, SPORT_WHY, PROGRAMME_DAYS, PROGRAMME_FACTS)
 e = html.escape
+# new day tours and the 5-day programme (client materials, 13.11.2026); the 2026 Word files also give the tours their new names
+TOURS += [dict(t, title=DAY_TOURS_2026[t['slug']]) for t in NEW_DAY_TOURS]
+TOURS.append(dict(slug='a-taste-of-moldova-5-days', title='A Taste of Moldova (5 days)', kind='multi', cats=['multi-day-tours', 'culture-heritage', 'wine-tours'],
+                  summary='Chișinău, the wine castle Mimi, Curchi and Old Orhei, the cellars of Cricova, Bessarabian carpets and the Soroca fortress in five days.',
+                  card='Chișinău · Castel Mimi · Old Orhei · Cricova · Soroca', images=['/img/soroca.jpg', '/img/cricova.jpg', '/img/orheiul-vechi.jpg', '/img/carpet-museum.jpg'],
+                  highlights=['One of the world’s largest underground wine cities', 'Mimi Castle, an iconic wine landmark', 'Monasteries, rural villages and Old Orhei',
+                              'The medieval fortress of Soroca on the Dniester', 'Hand-woven carpets and crafts at Arta Rustica', 'Moldovan cuisine with Romanian, Slavic, Turkish and Balkan influences']))
+for t in TOURS:
+    if t['slug'] in DAY_TOURS_2026:
+        t['title'] = DAY_TOURS_2026[t['slug']]
+    if t['kind'] == 'multi':
+        key = 'atasteofmoldova-5' if t['slug'] == 'a-taste-of-moldova-5-days' else t['slug']
+        t['duration'], t['pdf'] = AGENCY_PDF[key]
+        t['price_from'] = None  # programmes for partner agencies: group rates are in the PDF, not on the page
+        t.pop('badge', None)
 BY_SLUG = {t['slug']: t for t in TOURS}
+BY_SLUG['atasteofmoldova']['title'] = 'A Taste of Moldova (7 days)'
 PROTOTYPE = True  # preview copy: keep Google off until launch
 REVIEWED = '24 October 2026'
 TAGLINE = 'Country shaped like a bunch of grapes · Unique terroir · Passion for wine'  # the brochures' slogan
@@ -116,8 +135,84 @@ INT_ICON = {'wine': 'f-glass', 'history': 'f-tower', 'soviet': 'f-star', 'nature
 SKIP = re.compile(r'^(highlights of the tour|tour package price|choose wine tours|tour details|note\s*:|nb!|book wine tours)', re.I)
 
 
+def tour_text_2026(path):
+    """Converted Word text: CAPS lines are headings, "•" lines a list; the first line (the programme title) is dropped."""
+    out, items = [], []
+    for line in [l.strip() for l in open(path, encoding='utf-8-sig').read().splitlines() if l.strip()][1:]:
+        if line.startswith(('•', '-', '–')):
+            items.append(line.lstrip('•–- ').strip()); continue
+        if items:
+            out.append('<ul class="ticks">' + ''.join(f'<li>{e(i)}</li>' for i in items) + '</ul>'); items = []
+        if re.fullmatch(r'from \d+ pax', line, re.I):
+            out.append(f'<p class="small"><b>Minimum group: {e(line.split()[1])} people</b></p>')
+        elif line.isupper():
+            out.append(f'<h3>{e(line.title().replace("’S", "’s").replace(" And ", " and ").replace(" Of ", " of ").replace(" The ", " the "))}</h3>')
+        else:
+            out.append(f'<p>{e(line)}</p>')
+    if items:
+        out.append('<ul class="ticks">' + ''.join(f'<li>{e(i)}</li>' for i in items) + '</ul>')
+    return '\n'.join(out)
+
+
+def tour_parts(t):
+    """2026 Word text split for the page: hook (first sentence block), intro paragraphs, stops [(heading, html)]. None if no 2026 text."""
+    path = os.path.join(HERE, 'data', 'tours_2026', t['slug'] + '.txt')
+    if not os.path.exists(path):
+        return None
+    hook, intro, stops, items = '', [], [], []
+    for line in [l.strip() for l in open(path, encoding='utf-8-sig').read().splitlines() if l.strip()][1:]:
+        if re.fullmatch(r'from \d+ pax', line, re.I) or re.fullmatch(r'[_\-–—]{5,}', line):
+            continue
+        if line.startswith(('•', '-', '–')):
+            items.append(line.lstrip('•–- ').strip()); continue
+        if items and stops:
+            stops[-1][1].append('<ul class="ticks">' + ''.join(f'<li>{e(i)}</li>' for i in items) + '</ul>'); items = []
+        short_title = len(line) <= 50 and not line.endswith(('.', '!', '?', ':', ';', ',')) and hook  # e.g. "Continue to Tiraspol"
+        if line.isupper() or short_title:
+            head = line.title() if line.isupper() else line[0].upper() + line[1:]
+            for a, b in (('’S', '’s'), ("'S", "'s"), (' And ', ' and '), (' Of ', ' of '), (' The ', ' the '), (' To ', ' to '), (' A ', ' a '), (' In ', ' in '), (' With ', ' with '), (' & ', ' & '), ('Atv', 'ATV')):
+                head = head.replace(a, b)
+            stops.append((head, [])); continue
+        if stops:
+            stops[-1][1].append(f'<p>{e(line)}</p>')
+        elif not hook:
+            hook = line
+        else:
+            intro.append(f'<p>{e(line)}</p>')
+    if items and stops:
+        stops[-1][1].append('<ul class="ticks">' + ''.join(f'<li>{e(i)}</li>' for i in items) + '</ul>')
+    return hook, intro, [(h, ''.join(x)) for h, x in stops]
+
+
+def programme_facts(t):
+    f = PROGRAMME_FACTS.get(t['slug'])
+    if not f:
+        return ''
+    rows = [('f-sun', 'Duration', t['duration']), ('f-romb', 'Group', f[0]), ('f-bowl', 'Meals', f[1])] + ([('f-tree', 'Best time', f[2])] if f[2] else [])
+    return '<dl class="dest-facts mt">' + ''.join(f'<div>{ic(i)}<dt>{h}</dt><dd>{e(v)}</dd></div>' for i, h, v in rows) + '</dl>'
+
+
+def route_html(t):
+    """Collapsed itinerary like on the big tour sites: one line per stop (day trips) or per day (programmes), click to open."""
+    if t['slug'] in PROGRAMME_DAYS:
+        rows = ''.join(f'<li><details><summary><span class="n">Day {n}</span><span class="t">{e(h)}<small>Meals: {m}</small></span></summary><p>{e(x)}</p></details></li>'
+                       for n, (h, m, x) in enumerate(PROGRAMME_DAYS[t['slug']], 1))
+        return f'<div class="route-head"><h2>Day by day</h2><button class="route-all" type="button">Open all days</button></div><ol class="route days">{rows}</ol><p class="small">Meals: B breakfast · L lunch · D dinner.</p>'
+    parts = tour_parts(t)
+    if not parts or not parts[2]:
+        return ''
+    rows = ''.join(f'<li><details><summary><span class="n">{n}</span><span class="t">{e(h)}</span></summary><div class="prose">{x}</div></details></li>'
+                   for n, (h, x) in enumerate(parts[2], 1))
+    return f'<div class="route-head"><h2>Your day, stop by stop</h2><button class="route-all" type="button">Open all stops</button></div><ol class="route">{rows}</ol>'
+
+
 def tour_body(t):
     """Site description paragraphs, minus what the page already shows elsewhere (title, prices, notes, highlights)."""
+    new_text = os.path.join(HERE, 'data', 'tours_2026', t['slug'] + '.txt')
+    if os.path.exists(new_text):
+        return tour_text_2026(new_text)
+    if t['slug'] == 'a-taste-of-moldova-5-days':
+        return '\n'.join(f'<h3>{e(h)}</h3><p>{e(x)}</p>' for h, x in TASTE5_DAYS)
     out, bullets = [], []
     blocks = SITE_TOURS.get(t['slug'], {}).get('blocks', [])
     wineries = bool(t.get('wineries'))
@@ -136,6 +231,8 @@ def tour_body(t):
 
 
 def card_price(t):
+    if t['kind'] == 'multi':
+        return '<span class="price"><small>Group rates on request</small></span>'
     if t.get('price2'):
         return f'<span class="price">€{t["price2"]}<small> /person for 2</small><em>groups from €{t["price_low"]}</em></span>'
     if t.get('price_from'):
@@ -197,8 +294,8 @@ MENU = [
                      ('Chișinău', '/about-moldova/chisinau/', False), ('Our cuisine', '/about-moldova/moldovan-cuisine/', False)]),
         ('About us', [('Get to know us', '/about-us/', True), ('Our services', '/about-us/our-services/', True),
                       ('Transportation services', '/about-us/transportation/', True), ('Contact', '/contact/', True)])]),
-    ('MICE & Business Travel', '/groups-mice/', [('MICE & Business Travel', [('Why choose Moldova?', None, False), ('Our services', '/groups-mice/', False),
-                                                                          ('Hotels & venues', None, False), ('Sport travel', None, False)])]),
+    ('MICE & Business Travel', '/mice/', [('MICE & Business Travel', [('Why choose Moldova?', '/mice/why-moldova/', True), ('Our services', '/mice/services/', True),
+                                                                   ('Hotels & venues', '/mice/hotels-venues/', True), ('Sport travel', '/mice/sport-travel/', True)])]),
     ('For travel agencies', '/travel-agencies/tour-samples/', [('For travel agencies', [('Why partner with us?', None, False),
                                                                                         ('Customized tour samples', '/travel-agencies/tour-samples/', True)])]),
     ('Blog', '/blog/', []),
@@ -265,7 +362,7 @@ def layout(path, title, desc, body, schema=None, wa_msg='Hello! I’d like to pl
 <p><a href="{SITE['facebook']}" rel="noopener">Facebook</a> · <a href="{SITE['instagram']}" rel="noopener">Instagram</a></p></div>
 <div><h4>Tours</h4><ul>{tours_col}<li><a href="/destinations/">Destinations map</a></li></ul></div>
 <div><h4>Plan your trip</h4><ul>{plan_col}</ul></div>
-<div><h4>Company</h4><ul><li><a href="/about-us/">About us</a></li><li><a href="/groups-mice/">MICE &amp; Business Travel</a></li><li><a href="/travel-agencies/tour-samples/">For travel agencies</a></li><li><a href="/blog/">Blog</a></li><li><a href="/contact/">Contact</a></li></ul></div>
+<div><h4>Company</h4><ul><li><a href="/about-us/">About us</a></li><li><a href="/mice/">MICE &amp; Business Travel</a></li><li><a href="/travel-agencies/tour-samples/">For travel agencies</a></li><li><a href="/blog/">Blog</a></li><li><a href="/contact/">Contact</a></li></ul></div>
 </div>
 <div class="copy">© 2026 {SITE['legal']} · <a href="/terms/">Terms &amp; Conditions</a> · <a href="/privacy/">Privacy Policy</a> · <a href="/cancellation-policy/">Cancellation policy</a></div>
 </div></footer>
@@ -651,6 +748,9 @@ def tour_page(t):
         book_attr = f" data-prices='{prices}'"
     elif t.get('price_from'):
         price_box, book_attr = f'<p class="from">From</p><p class="big">€{t["price_from"]}<small> per person</small></p>', ''
+    elif t['kind'] == 'multi':
+        price_box, book_attr = (f'<p class="from">For travel agencies</p><p class="big">Group rates<small> on request</small></p><p class="small">Groups from 5 people. '
+                                f'Full programme and prices in the PDF.</p><p><a class="btn btn-outline wide" href="{t["pdf"]}" download>Download PDF programme</a></p>'), ''
     else:
         price_box, book_attr = '<p class="from">Price</p><p class="big">On request</p><p class="small">Send the form and we’ll reply with the price for your group.</p>', ''
     cat_links = ' · '.join(f'<a href="/tours/{c}/">{CATEGORIES[c]["short"]}</a>' for c in t['cats'])
@@ -662,30 +762,48 @@ def tour_page(t):
         quick_label, quick_price = 'Price for 2 travellers', f'€{t["price2"]}<small> per person</small>'
     elif t.get('price_from'):
         quick_label, quick_price = 'From', f'€{t["price_from"]}<small> per person</small>'
+    elif t['kind'] == 'multi':
+        quick_label, quick_price = 'For travel agencies', 'Group rates on request'
     else:
         quick_label, quick_price = 'Price', 'On request'
     # long site descriptions: first two blocks visible, the rest folded
-    parts = tour_body(t).split('\n')
+    tp = tour_parts(t)
+    route = route_html(t)
+    lead = tp[0] if tp and tp[0] else t['summary']
+    if tp:  # 2026 text: the stops are in the route; About keeps only the intro
+        hl = ''
+        parts = tp[1] or [f'<p>{e(t["summary"])}</p>']
+    elif t['slug'] in PROGRAMME_DAYS:
+        parts = [f'<p>{e(t["summary"])}</p>']
+    else:
+        parts = tour_body(t).split('\n')
     about = '\n'.join(parts) if len(parts) <= 3 else (
         '\n'.join(parts[:2]) + '<details class="readmore"><summary>Read more about this tour</summary>' + '\n'.join(parts[2:]) + '</details>')
-    body = f'''<div class="wrap">{crumbs(('Tours', '/tours/'), (CATEGORIES[t['cats'][0]]['name'], f"/tours/{t['cats'][0]}/"), (t['title'], None))}
+    trail = ((('For travel agencies', '/travel-agencies/tour-samples/'),) if t['kind'] == 'multi'
+             else (('Tours', '/tours/'), (CATEGORIES[t['cats'][0]]['name'], f"/tours/{t['cats'][0]}/")))
+    if t['kind'] == 'multi':
+        related = [r for r in TOURS if r['kind'] == 'multi' and r is not t][:3]
+    pdf_box = (f'<div class="pdf-box">{ic("f-route", "ic ic-lg")}<div><b>Full programme with prices</b><span>PDF for travel agencies · {e(t["duration"])} · groups from 5 people</span></div>'
+               f'<a class="btn btn-primary" href="{t["pdf"]}" download>Download PDF</a></div>') if t.get('pdf') else ''
+    body = f'''<div class="wrap">{crumbs(*trail, (t['title'], None))}
 <div class="gallery-wrap"><div class="gallery n{len(imgs)}" role="region" aria-label="Photos of the tour" tabindex="0">{gallery}</div>
 {f'<div class="g-dots" aria-hidden="true">{"<i></i>" * len(imgs)}</div>' if len(imgs) > 1 else ''}</div>
 <div class="tour-layout"><div class="tour-main">
 <p class="eyebrow">{cat_links}</p>
 <h1>{e(t['title'])}</h1>
-<div class="chips static"><span class="chip">{ic('f-sun')}{e(t['duration'])}</span><span class="chip">{ic('f-romb')}Private tour</span><span class="chip">{ic('f-bird')}Licensed guide</span>{f'<span class="chip">{ic("f-hook")}Passport needed</span>' if tn else ''}</div>
-<p class="lead">{e(t['summary'])}</p>
+<div class="chips static"><span class="chip">{ic('f-sun')}{e(t['duration'])}</span><span class="chip">{ic('f-romb')}{'From ' + str(t['min_pax']) + ' people' if t.get('min_pax') else 'Groups from 5' if t['kind'] == 'multi' else 'Private tour'}</span><span class="chip">{ic('f-bird')}Licensed guide</span>{f'<span class="chip">{ic("f-hook")}Passport needed</span>' if tn else ''}</div>
+<p class="lead hook">{e(lead)}</p>
 <div class="quick-book"><div class="qb-price"><span>{quick_label}</span><b>{quick_price}</b></div>
 <div class="qb-ctas"><a class="btn btn-primary" href="#book">Get my price</a>{wa(msg, 'WhatsApp')}</div></div>
-{TRANSNISTRIA_WARN if tn else ''}
+{TRANSNISTRIA_WARN if tn else ''}{pdf_box}
 {f'<h2>Highlights</h2><ul class="hl">{hl}</ul>' if hl else ''}
+{route}{programme_facts(t)}
 {table}{incl}{wineries}{good_to_know(t)}
 <div class="tour-more"><h2>About this tour</h2><div class="prose">{about}</div>
 <h2>Questions</h2>{faq_html(faq_keys)}</div>
 </div>
 <aside class="book" id="book"{book_attr}>{price_box}
-{quote_form(t['title'], compact=True, button='Get my price')}
+{quote_form(t['title'], compact=True, button='Request group rates' if t['kind'] == 'multi' else 'Get my price')}
 {wa(msg, 'Ask on WhatsApp', 'btn btn-wa wide')}
 <ul class="perks"><li>Free request, no obligation</li><li>Itinerary adjusted to you</li><li>Or call {SITE['phone']}</li></ul></aside>
 </div></div>
@@ -764,6 +882,7 @@ def home():
 <p class="eyebrow light">Why travel with us</p><h2>Moldova, organised by locals</h2>
 <p class="tagline">{TAGLINE}</p>
 <div class="proof-nums">{''.join(f'<div><b>{n}</b><span>{e(t)}</span></div>' for n, t in proof)}</div>
+<p class="trusted">{ic('f-star')}Trusted since {SPORT_SINCE} by {len(SPORT_ASSOCIATIONS)} national football associations and {len(SPORT_CLUBS)} international clubs. <a href="/mice/sport-travel/">Sport travel →</a></p>
 <div class="benefits">{''.join(f'<div>{ic(i)}<b>{h}</b><span>{x}</span></div>' for i, h, x in benefits)}</div>
 <div class="reviews"><div><h3>What our travellers say</h3><p>Read the reviews of Enjoy Moldova by Solei Tourism on Google, or leave your own after your trip.</p></div>
 <a class="btn btn-ghost" href="{GOOGLE_REVIEWS}" rel="noopener" target="_blank">Read our Google reviews →</a></div>
@@ -815,32 +934,46 @@ def tours_index():
 
 
 def wineries_page():
-    """Wineries & wine tastings: only the list of wineries (a short description per winery will follow)."""
-    t = BY_SLUG['wine-tastings']
-    grid = ''.join(f'''<a class="winery js-wa" href="#" data-msg="{e("Hello! I’m interested in a tour and tasting at " + w + ".")}">{ic("f-glass")}{e(w)}<small>Ask for price →</small></a>''' for w in t['wineries'])
-    body = page_hero('Tours', 'Wineries & wine tastings', 'Choose a winery: we arrange the tasting, the transport and a guide.', '/img/milestii-mici.jpg') + f'''
+    """Wineries & wine tastings: the 7 wineries of the 2026 price list (photo, days, tastings, price from) + the PDF."""
+    cards = []
+    for w in WINERIES_2026:
+        opts = ''.join(f'<li>{e(o)}</li>' for o in w['options'])
+        note = f'<p class="small">{e(w["note"])}</p>' if w['note'] else ''
+        cards.append(f"""<article class="winery-card" id="{w['key']}"><div class="wc-ph">{pic(f"/img/wineries/{w['key']}.jpg", w['name'], sizes='(max-width: 980px) 100vw, 560px')}</div>
+<div class="wc-body"><h3>{e(w['name'])}</h3>
+<p class="wc-meta">{ic('f-sun')}{e(w['days'])}, {e(w['hours'])}<span>From <b>€{w['from_eur']}</b> per person</span></p>
+<p>{e(w['text'])}</p><h4>Tastings</h4><ul class="ticks">{opts}</ul>{note}
+<p class="small">Tours in {e(w['langs'])}. Price per person, depends on group size; transport from Chișinău and back included.</p>
+<div class="wc-ctas"><a class="btn btn-primary" href="{QUOTE}">Request this tasting</a>{wa(f"Hello! I’d like a tour and tasting at {w['name']}.", 'WhatsApp')}</div></div></article>""")
+    others = ''.join(f'<li>{e(n)}</li>' for n in WINERIES_ON_REQUEST)
+    body = page_hero('Tours', 'Wineries & wine tastings', 'Seven of Moldova’s best wineries, from Guinness-record cellars to family estates. Transport from Chișinău, tasting and guide arranged.', '/img/milestii-mici.jpg') + f"""
 <section class="section"><div class="wrap">{crumbs(('Tours', '/tours/'), ('Wineries & wine tastings', None))}
-<h2 class="mb">Choose your winery</h2><div class="wineries-grid">{grid}</div>
-<div class="todo mt"><b>De completat: ofertele actuale (PDF) și o descriere scurtă a fiecărei crame</b>Mai târziu, unde se poate, rezervare online.</div>
-</div></section>{cta_band('Which winery would you like to visit?', 'Hello! I’d like a wine tasting in Moldova.')}'''
-    layout('/tours/wineries/', 'Moldova Wineries & Wine Tastings | Enjoy Moldova',
-           'Wine tastings at 13 Moldovan wineries: Cricova, Mileștii Mici, Château Purcari, Castel Mimi, Château Vartely, Asconi and more. Ask for a price.',
+<div class="pdf-box">{ic('f-glass', 'ic ic-lg')}<div><b>Wine Tours &amp; Tastings 2026</b><span>All wineries, tastings and prices by group size (PDF, 8 pages)</span></div>
+<a class="btn btn-primary" href="/pdf/wine-tours-tastings-2026.pdf" download>Download PDF</a></div>
+<div class="chips mb">{''.join(f'<a class="chip" href="#{w["key"]}">{e(w["name"])}</a>' for w in WINERIES_2026)}</div>
+<div class="winery-list">{''.join(cards)}</div>
+<h2 class="mt">Also on request</h2><p>We also arrange visits and tastings at:</p><ul class="ticks cols2">{others}</ul>
+</div></section>{cta_band('Which winery would you like to visit?', 'Hello! I’d like a wine tasting in Moldova.')}"""
+    layout('/tours/wineries/', 'Moldova Wineries & Wine Tastings 2026 | Enjoy Moldova',
+           'Wine tours and tastings at Cricova, Château Purcari, Mileștii Mici, Castel Mimi, Château Vartely, Château Cojușna and Asconi: days, tastings and prices from €23.',
            body, [crumbs_ld(('Tours', '/tours/'), ('Wineries & wine tastings', '/tours/wineries/'))])
 
 
 def tour_samples():
-    """For travel agencies: the multi-day programmes, as samples to customise."""
-    body = page_hero('For travel agencies', 'Customized tour samples', 'Multi-day programmes we run for partner agencies. Every sample can be adjusted to your groups, dates and budget.', '/img/purcari.jpg') + f'''
+    """For travel agencies: the multi-day programmes as samples, each with its page and its PDF (prices only in the PDF)."""
+    rows = ''.join(f"""<li><a href="{t['url']}">{e(t['title'])}</a><span>{e(t['duration'])}</span><a class="more" href="{t['pdf']}" download>PDF ↓</a></li>""" for t in MULTI)
+    types = ''.join(f'<li>{e(x)}</li>' for x in AGENCY_TOUR_TYPES)
+    body = page_hero('For travel agencies', 'Customized tour samples', 'Multi-day programmes we run for groups formed by our partners abroad. Every sample can be adjusted to your group, dates and budget.', '/img/purcari.jpg') + f"""
 <section class="section"><div class="wrap">{crumbs(('For travel agencies', None), ('Customized tour samples', None))}
-<div class="grid g2">{''.join(card(t) for t in MULTI)}</div>
-<div class="contact-layout mt"><div class="prose"><h2>Working with us</h2><ul class="ticks">
-<li>A DMC based in Chișinău since 2001, repeatedly awarded Best Inbound Travel Agency in Moldova</li>
-<li>FIT and groups, with hotels, transport, guides and tastings arranged</li><li>One local contact for the whole programme</li></ul>
-<div class="todo"><b>De completat: „Why partner with us?”</b>Pagina e „coming soon” în meniu; textul îl pregătește echipa.</div></div>
-<div class="form-card" id="quote"><h2>Request a programme</h2><p class="small">Tell us the dates, group size and the sample you like.</p>{quote_form('custom', button='Request a proposal')}</div></div>
-</div></section>'''
+<div class="note"><b>How it works:</b> you form the group, we organise everything in Moldova: hotels, transport, guides, tastings and meals. Group rates on request, groups from 5 people. Each programme has a PDF you can send to your clients.</div>
+<div class="grid g3 mt">{''.join(card(t) for t in MULTI)}</div>
+<h2 class="mt">All programmes as PDF</h2><ul class="pdf-list">{rows}</ul>
+<div class="contact-layout mt"><div class="prose"><h2>What we can organise for your groups</h2><ul class="ticks">{types}</ul>
+<p>A DMC based in Chișinău since 2001, repeatedly awarded Best Inbound Travel Agency in Moldova, with one local contact for the whole programme.</p></div>
+<div class="form-card" id="quote"><h2>Request a programme</h2><p class="small">Tell us the dates, group size and the programme you like.</p>{quote_form('custom', button='Request a proposal')}</div></div>
+</div></section>"""
     layout('/travel-agencies/tour-samples/', 'Moldova Tour Samples for Travel Agencies | Enjoy Moldova DMC',
-           'Multi-day Moldova programmes for travel agencies: wine, gastronomy, culture and countryside. Customised for your groups by a local DMC since 2001.',
+           'Multi-day Moldova programmes for travel agencies, with PDFs: A Taste of Moldova, Culture, Wine & Gastronomy, Wine & Gastronomy, Countryside. Group rates on request.',
            body, [ORG_LD])
 
 
@@ -965,6 +1098,10 @@ def text_to_html(slug, text):
     return '\n'.join(out)
 
 
+PAGE_PDF = {'about-moldova/facts': '<div class="pdf-box"><svg class="ic ic-lg"><use href="#f-tulip"/></svg><div><b>Facts about Moldova</b><span>The country in short (PDF, 3 pages)</span></div>'
+                                   '<a class="btn btn-primary" href="/pdf/facts-about-moldova.pdf" download>Download PDF</a></div>'}
+
+
 def content_page(key, section, title, intro, src_slugs):
     # one or more old pages merged into this one: each keeps its own heading
     srcs = [SITE_PAGES.get(sl, {}) for sl in src_slugs]
@@ -984,7 +1121,7 @@ def content_page(key, section, title, intro, src_slugs):
     body = page_hero(sec_name, title, intro, hero) + f'''
 <section class="section"><div class="wrap">{crumbs(*([] if section == 'about-us' else [('Plan your trip', '/plan-your-trip/')]), (sec_name, sec_url), (title, None))}
 <div class="side-layout"><aside class="side"><h4>{sec_name}</h4>{siblings}<h4>Before you go</h4>{''.join(f'<a href="{u}">{e(n)}</a>' for u, n in BEFORE_YOU_GO)}</aside>
-<article class="prose">{text}{f'<div class="pics">{pics}</div>' if pics else ''}</article></div>
+<article class="prose">{PAGE_PDF.get(key, '')}{text}{f'<div class="pics">{pics}</div>' if pics else ''}</article></div>
 {f'<div class="mt">{rel_html}</div>' if rel_html else ''}
 </div></section>{cta_band()}'''
     layout(f'/{key}/', f'{title} | Enjoy Moldova', intro, body, [crumbs_ld(*([] if section == 'about-us' else [('Plan your trip', '/plan-your-trip/')]), (sec_name, sec_url), (title, f'/{key}/'))])
@@ -1217,13 +1354,13 @@ def about_us():
                    [('f-bird', 'Your guide'), ('f-glass', 'Wine expert'), ('f-route', 'Trip planner'), ('f-heart', 'Groups & MICE')])
     body = page_hero('About us', 'Enjoy Moldova by Solei Tourism', 'A Chișinău-based travel company since 2001, repeatedly awarded Best Inbound Travel Agency in the Republic of Moldova.', '/img/besalma.jpg') + f'''
 <section class="facts section"><div class="wrap"><div class="grid g4">
-<div><b>2001</b><span>founded in Chișinău</span></div><div><b>20+ years</b><span>organising football team travel and events</span></div>
+<div><b>2001</b><span>founded in Chișinău</span></div><div><b>Since 2009</b><span>travel for football teams: 23 national associations and 28 clubs</span></div>
 <div><b>13</b><span>partner wineries for tastings</span></div><div><b>FIT &amp; groups</b><span>individual travellers and groups, tours and MICE</span></div></div></div></section>
 <section class="section"><div class="wrap">{crumbs(('About us', None))}
 <div class="about-intro prose"><h2>Your local DMC since 2001</h2>
 <p class="lead">We started in Chișinău in 2001 as Solei-Turism and grew into one of the leading inbound travel companies in Moldova. We have been awarded Best Inbound Travel Agency in the Republic of Moldova more than once, most recently first place in inbound tourism at the Moldova Tourism Awards 2024.</p>
 <p>We plan the logistics and every detail of your trip, so you can simply enjoy it. We design each tour around you and match you with the best places, people and experiences. Our guides help you understand local life, not just see the sights.</p>
-<p>Our philosophy is simple: quality, satisfaction, integrity and efficiency. For more than 20 years we have also arranged travel for football teams and sport events.</p>
+<p>Our philosophy is simple: quality, satisfaction, integrity and efficiency. Since 2009 we have also arranged travel and logistics for football teams and sport delegations.</p>
 <p>We work with individual travellers, groups, companies and travel agencies, and present Moldova every year at international fairs such as ITB Berlin.</p>
 <p><a class="more" href="/about-us/our-services/">Our services →</a> · <a class="more" href="/about-us/transportation/">Transportation →</a></p></div>
 <h2 class="mt mb">Our story</h2><ol class="timeline">{tl}</ol>
@@ -1231,29 +1368,83 @@ def about_us():
 <div class="todo"><b>De completat: echipa</b>3–6 oameni: o fotografie, numele, rolul și limbile vorbite. Oamenii reali sunt ce lipsește cel mai mult de pe site.</div>
 <div class="team">{team}</div>
 <article class="prose narrow-prose mt"><details class="readmore"><summary>Read our full company profile</summary>{text_to_html('about-us', src)}</details>
-<p><a class="more" href="/groups-mice/">Groups, MICE &amp; travel agents →</a></p></article></div></section>{cta_band()}'''
+<p><a class="more" href="/mice/">MICE &amp; Business Travel →</a> · <a class="more" href="/travel-agencies/tour-samples/">For travel agencies →</a></p></article></div></section>{cta_band()}'''
     layout('/about-us/', 'About Enjoy Moldova by Solei Tourism | Since 2001', 'Enjoy Moldova by Solei Tourism: Moldova DMC since 2001, awarded Best Inbound Travel Agency. Tours, transfers, guides, business travel and MICE.', body, [ORG_LD])
 
 
-def groups_page():
-    services = [('f-route', 'Transfers & transport', 'Airport transfers and any vehicle: VIP cars, minivans, minibuses and coaches, plus rent-a-car.'),
-                ('f-tulip', 'Accommodation', 'Hotels in Chișinău and across Moldova, countryside guest houses and Tiraspol.'),
-                ('f-tree', 'Tailor-made programmes', 'FIT and group tours, combined tours with Romania and city breaks (Bucharest, Iași, Chișinău, Tiraspol).'),
-                ('f-star', 'Events & sport', 'MICE, festivals and special event tours. More than 20 years of travel arrangements for football teams.'),
-                ('f-bowl', 'Catering', 'Group meals, wine dinners and tastings at partner wineries.'),
-                ('f-bird', 'Guides', 'Licensed guides; English and other languages on request.')]
-    body = page_hero('MICE & Business Travel', 'MICE & Business Travel', 'Your local partner in Moldova since 2001: transport, hotels, venues, events and sport travel.', '/img/cricova.jpg') + f'''
-<section class="section"><div class="wrap">{crumbs(('MICE & Business Travel', None))}
-<div class="todo mb"><b>Coming soon: Why choose Moldova? · Our services · Hotels &amp; venues · Sport travel</b>Echipa pregătește textele (serviciile vor fi diferite de cele din About us). Până atunci rămân serviciile de mai jos.</div>
-<div class="grid g3">{''.join(f'<div class="feat">{ic(i, "ic ic-lg ic-c")}<h3>{h}</h3><p>{p}</p></div>' for i, h, p in services)}</div>
-<div class="contact-layout mt"><div class="prose"><h2>Why work with us</h2><ul class="ticks">
-<li>A DMC based in Chișinău since 2001, repeatedly awarded Best Inbound Travel Agency in Moldova</li>
-<li>Relationships with airlines, hotels, wineries and travel companies</li><li>Individual and corporate clients, FIT and groups</li>
-<li>One local contact for logistics, so your group can focus on the trip</li></ul>
-<p>Call {SITE['phone']} or write to <a href="mailto:{SITE['email']}">{SITE['email']}</a>.</p></div>
-<div class="form-card" id="quote"><h2>Request a group proposal</h2><p class="small">Tell us the dates, group size and what the group needs.</p>{quote_form('custom', button='Request a proposal')}</div></div>
-</div></section>'''
-    layout('/groups-mice/', 'MICE & Business Travel in Moldova | Enjoy Moldova DMC', 'Moldova DMC since 2001: MICE, events, business travel, transfers, hotels, venues and sport travel.', body, [ORG_LD])
+def event_form():
+    types = ''.join(f'<option>{x}</option>' for x in ('Conference or seminar', 'Corporate meeting', 'Incentive trip', 'Team building', 'Gala dinner or celebration', 'Sport team travel', 'Other'))
+    return f"""<form class="quote js-form" action="/thank-you/" novalidate>
+<div class="full"><label for="ev-type">Type of event</label><select id="ev-type" name="type">{types}</select></div>
+<div class="row"><div><label for="ev-date">Dates</label><input id="ev-date" name="date" type="date" data-err="Please choose a date in the future."></div>
+<div><label for="ev-pax">Participants</label><input id="ev-pax" name="pax" type="number" min="1" value="20" required data-err="Please enter the number of participants."></div></div>
+<div class="full"><label for="ev-name">Your name and company</label><input id="ev-name" name="name" required autocomplete="organization" data-err="Please tell us your name."></div>
+<div class="full"><label for="ev-email">Email</label><input id="ev-email" name="email" type="email" required autocomplete="email" data-err="That email doesn’t look right."></div>
+<div class="full"><label for="ev-msg">Rooms, meeting set-up, budget <span class="opt">(optional)</span></label><textarea id="ev-msg" name="msg" rows="3"></textarea></div>
+<button class="btn btn-primary" type="submit">Request an event proposal</button>
+<p class="form-note">Free, no obligation. We reply by email with venues and a proposal.</p></form>"""
+
+
+MICE_PAGES = [('/mice/why-moldova/', 'Why choose Moldova?'), ('/mice/services/', 'Our services'), ('/mice/hotels-venues/', 'Hotels & venues'), ('/mice/sport-travel/', 'Sport travel')]
+
+
+def mice_layout(path, title, intro, img, inner, desc, form=True):
+    side = ''.join(f'<a class="{"on" if u == path else ""}" href="{u}">{e(n)}</a>' for u, n in [('/mice/', 'Overview')] + MICE_PAGES)
+    trail = (('MICE & Business Travel', '/mice/'), (title, None)) if path != '/mice/' else (('MICE & Business Travel', None),)
+    body = page_hero('MICE & Business Travel', title, intro, img) + f"""
+<section class="section"><div class="wrap">{crumbs(*trail)}
+<div class="side-layout"><aside class="side"><h4>MICE &amp; Business Travel</h4>{side}</aside>
+<article class="mice-body">{inner}</article></div>
+{f'<div class="contact-layout mt" id="quote"><div class="prose"><h2>Plan your event with us</h2><p>Tell us the type of event, the dates and the number of participants. We reply with suitable venues and a proposal for accommodation, transport, catering and activities.</p><p>Or call {SITE["phone"]} · <a href="mailto:{SITE["email"]}">{SITE["email"]}</a></p></div><div class="form-card">{event_form()}</div></div>' if form else ''}
+</div></section>"""
+    layout(path, f'{title} | Enjoy Moldova DMC', desc, body, [ORG_LD, crumbs_ld(*[(n, u or path) for n, u in trail])])
+
+
+def rows_html(items, icon='f-romb'):
+    return '<ul class="gtk">' + ''.join(f'<li>{ic(i if len(it) == 3 else icon)}<div><b>{e(it[-2])}</b>{e(it[-1])}</div></li>' for it in items for i in [it[0]]) + '</ul>'
+
+
+def mice_pages():
+    cards = ''.join(f'<a class="card link-card" href="{u}"><div class="body"><h3>{e(n)}</h3><div class="foot"><span class="more">Read →</span></div></div></a>' for u, n in MICE_PAGES)
+    intro = ''.join(f'<p>{e(x)}</p>' for x in MICE_INTRO)
+    mice_layout('/mice/', 'Your trusted local DMC partner in Moldova', 'Conferences, seminars, corporate meetings, incentive trips and sport travel, organised by a local DMC since 2001.',
+                '/img/cricova.jpg', f"""<div class="prose">{intro}<p class="tagline-dark">{e(MICE_PHILOSOPHY)}</p></div><div class="grid g2 mt">{cards}</div>""",
+                'MICE and business travel in Moldova: conference venues, hotels, transport, catering and sport travel, organised by Enjoy Moldova by Solei Tourism, a DMC since 2001.')
+    mice_layout('/mice/why-moldova/', 'Why choose Moldova?', 'A distinctive destination. Meaningful connections. Memorable experiences.', '/img/wine-tasting-table.jpg',
+                rows_html(MICE_WHY_MOLDOVA) + '<p class="tagline-dark mt">Make business happen. Make Moldova memorable.</p>',
+                'Why choose Moldova for your next event: versatile venues, wine and gastronomy, culture and one local DMC partner for everything.')
+    services = '<ul class="gtk">' + ''.join(f'<li>{ic("f-route")}<div><b>{e(h)}</b>{e(x)}</div></li>' for h, x in MICE_SERVICES) + '</ul>'
+    mice_layout('/mice/services/', 'Our services', 'MICE and conference packages: flexible, tailor-made, with professional on-site coordination.', '/img/cricova.jpg',
+                services + '<p class="tagline-dark mt">Flexible packages · Tailor-made solutions · Professional on-site coordination</p><h2 class="mt">Why work with us</h2>'
+                + rows_html([('f-star', h, x) for h, x in MICE_WHY_US]) + '<p class="tagline-dark mt">Your objectives. Our local expertise. Every detail coordinated.</p>',
+                'MICE services in Moldova: conference venues, audio-visual, accommodation, catering, transfers, registration, interpreters, branding, networking and tours.')
+    table = '<div class="ptable cmp"><table><thead><tr><th>Hotel</th><th>Rooms</th><th>Meeting space</th><th>Largest room</th></tr></thead><tbody>' + ''.join(
+        f'<tr><th><a href="#h{n}">{e(h["name"])}</a> {"★" * h["stars"]}</th><td>{h["rooms"]}</td><td>{f"{h["space"]:,} m²" if h["space"] else "3 halls"}</td><td>{e(h["largest"])}</td></tr>'
+        for n, h in enumerate(MICE_HOTELS)) + '</tbody></table></div>'
+    hotels = ''.join(f"""<article class="hotel-card" id="h{n}"><h3>{e(h['name'])} <span class="stars">{'★' * h['stars']}</span></h3>
+<p class="wc-meta">{ic('f-route')}{e(h['location'])}</p><p><b>Best for:</b> {e(h['best'])}</p>
+<dl class="dest-facts"><div>{ic('f-tower')}<dt>Rooms</dt><dd>{h['rooms']}</dd></div><div>{ic('f-romb')}<dt>Meetings</dt><dd>{e(h['meeting'])}</dd></div></dl>
+<p><b>Dining:</b> {e(' · '.join(h['dining']))}</p><p><a class="more" href="{h['web']}" rel="noopener" target="_blank">Hotel website →</a></p></article>""" for n, h in enumerate(MICE_HOTELS))
+    mice_layout('/mice/hotels-venues/', 'Hotels & venues in Chișinău', 'Conference hotels in the city centre, from 74 to 143 rooms and meeting rooms for up to 1,200 m².', '/img/hero-vineyard.jpg',
+                f'<h2>At a glance</h2>{table}{hotels}<div class="todo mt"><b>De completat</b>Poze ale hotelurilor și locațiile speciale (crame, conace) pentru evenimente.</div>',
+                'Conference hotels in Chișinău: Radisson Blu Leogrand, Courtyard by Marriott, MIMI Hotel, Bristol Central Park and Mercure Jazz, with rooms and meeting capacity.')
+    lst = lambda xs: '<ul class="ticks">' + ''.join(f'<li>{e(x)}</li>' for x in xs) + '</ul>'
+    sport = f"""<div class="prose"><p class="lead">Your team. Your game. Our responsibility.</p>
+<p>Enjoy Moldova by Solei Tourism is a Moldovan DMC specialising in sports travel, team logistics and hospitality for international sports delegations. Since {SPORT_SINCE} we have supported professional football clubs, national teams, youth teams in UEFA youth competitions, beach volleyball teams and other delegations.</p></div>
+<div class="proof-mini"><div><b>{len(SPORT_ASSOCIATIONS)}</b><span>national football associations</span></div><div><b>{len(SPORT_CLUBS)}</b><span>international clubs</span></div><div><b>{SPORT_SINCE}</b><span>first team welcomed</span></div></div>
+<h2>Sports we serve</h2>{rows_html([('f-star', h, x) for h, x in SPORT_SERVED])}
+<h2 class="mt">Complete team travel &amp; logistics</h2>{lst(SPORT_SERVICES)}
+<h2 class="mt">Accommodation &amp; catering</h2><p>Hotels in Chișinău and beyond, chosen around the team’s schedule, training locations and competition venues. Meals go beyond standard hotel service:</p>{lst(SPORT_CATERING)}
+<h2 class="mt">Transport</h2>{lst(SPORT_TRANSPORT)}
+<h2 class="mt">Training facilities &amp; stadiums</h2>{lst(SPORT_TRAINING)}
+<h2 class="mt">Dedicated coordination, 24/7</h2>{lst(SPORT_COORDINATION)}
+<h2 class="mt">Our experience in Tiraspol</h2><p>Full ground handling for clubs playing away matches in Tiraspol: accommodation, transport, catering, match logistics and a coordinator who stays overnight when required. Among them:</p>{lst(SPORT_TIRASPOL)}
+<h2 class="mt">Teams we have assisted</h2><div class="team-lists"><div><h3>National football associations</h3>{lst(SPORT_ASSOCIATIONS)}</div><div><h3>International clubs</h3>{lst(SPORT_CLUBS)}</div></div>
+<h2 class="mt">Why choose Enjoy Moldova</h2>{rows_html([('f-romb', h, x) for h, x in SPORT_WHY])}
+<p class="tagline-dark mt">We take care of the arrangements on the ground, so your players and staff can focus on the game.</p>"""
+    mice_layout('/mice/sport-travel/', 'Sport team travel & logistics', f'Football clubs, national teams and sports delegations in Moldova since {SPORT_SINCE}: hotels, meals, transport, training pitches and 24/7 support.',
+                '/img/hero-vineyard.jpg', sport,
+                f'Sport team travel in Moldova since {SPORT_SINCE}: logistics for {len(SPORT_ASSOCIATIONS)} national football associations and {len(SPORT_CLUBS)} clubs, including away matches in Tiraspol.')
 
 
 def contact():
@@ -1403,7 +1594,7 @@ if __name__ == '__main__':
     section_index('useful-info', 'Useful info', 'Practical information for your trip: phone numbers, customs, borders and embassies.', '/img/capriana.jpg')
     for k, v in PAGES.items(): content_page(k, *v)
     plan_hub(); safety_page(); itinerary_page(); cricova_vs_milestii()
-    blog(); about_us(); groups_page(); wineries_page(); tour_samples(); contact(); legal_pages(); thank_you(); not_found()
+    blog(); about_us(); mice_pages(); wineries_page(); tour_samples(); contact(); legal_pages(); thank_you(); not_found()
     builder_page(); destinations_page()
     n = redirects()
     k = design_kit()
