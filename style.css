@@ -765,4 +765,34 @@ nav.main{gap:var(--s4);font-size:var(--fs-sm)}
 .hook{font-size:var(--fs-lg);color:var(--ink)}
 .pdf-list .more{display:inline-block;padding:var(--s2) var(--s2);min-height:24px}
 
+/* analysis fixes 16.11: PDF inside the content, programme cards, folded lists, photo credits */
+.prog-card{display:flex;flex-direction:column}.prog-card .ph{display:block}.prog-card h3 a{text-decoration:none}
+.prog-card .body{display:flex;flex-direction:column;flex:1}
+.prog-facts{display:flex;align-items:center;gap:var(--s2);color:var(--muted);font-size:var(--fs-sm);margin-top:var(--s2)}.prog-facts .ic{color:var(--wine)}
+.prog-ctas{display:flex;gap:var(--s2);margin-top:auto;padding-top:var(--s4)}.prog-ctas .btn{flex:1;justify-content:center;padding:10px 12px}
+.pdf-inline{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--wine);padding:2px 0}.pdf-inline .ic{color:var(--wine)}
+.route-head span{display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap}
+.route-pdf{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--wine);font-size:var(--fs-sm);min-height:44px;text-decoration:none}
+.chip-pdf{color:var(--wine);border-color:var(--wine);text-decoration:none}
+.partner-contact{display:flex;gap:var(--s3);align-items:flex-start;background:var(--card);border-radius:var(--r);padding:var(--s4);margin-top:var(--s4)}
+.partner-contact .ic{color:var(--wine);flex:none}.partner-contact b{display:block}
+details.tastings{border:0;margin:var(--s2) 0}details.tastings>summary{padding:var(--s2) 0;color:var(--wine);justify-content:flex-start;gap:var(--s2)}
+details.tastings[open]>summary::after{content:"–"}
+details.dest-type{border-bottom:1px solid var(--line)}details.dest-type>summary{padding:var(--s3) 0}
+details.dest-type>summary h2{margin:0}
+.dest-types{grid-template-columns:1fr}
+details.team-all{border:0}details.team-all>summary{padding:var(--s3) 0;color:var(--wine);justify-content:flex-start;gap:var(--s2)}
+.trusted-by{background:var(--card);border-left:4px solid var(--gold);border-radius:var(--r-sm);padding:var(--s3) var(--s4);margin:var(--s4) 0}.trusted-by span{color:var(--muted)}
+.sport-ph,.hotel-ph{position:relative;border-radius:var(--r);overflow:hidden;margin:var(--s4) 0;aspect-ratio:16/7;background:var(--placeholder)}
+.sport-ph img,.hotel-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.credit{position:absolute;right:0;bottom:0;z-index:2;max-width:100%;min-height:24px;display:flex;align-items:center;padding:2px 10px;font-size:10px;line-height:1.5;color:#fff;background:rgba(0,0,0,.45);text-decoration:none;border-top-left-radius:var(--r-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gallery>div{position:relative}
+@media (max-width:640px){.sport-ph,.hotel-ph{aspect-ratio:4/3}.prog-ctas{flex-direction:column}}
+
+details.fold{border-bottom:1px solid var(--line)}details.fold>summary{padding:var(--s3) 0}details.fold>summary h2{margin:0;font-size:var(--fs-xl)}
+details.fold[open]>summary{padding-bottom:var(--s2)}
+.partner-contact a{display:inline-block;padding:4px 0}
+@media (max-width:640px){.wc-ctas{flex-wrap:nowrap}.wc-ctas .btn{flex:1;justify-content:center;padding:10px 8px;font-size:var(--fs-sm)}}
+@media (max-width:640px){.winery-card .wc-ph{max-height:160px;overflow:hidden}.winery-card .wc-ph img{height:160px;object-fit:cover}}
+
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
