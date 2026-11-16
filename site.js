@@ -290,3 +290,7 @@ $$('.route-all').forEach(btn => btn.addEventListener('click', () => {
   btn.dataset.open = open ? '1' : '';
   btn.textContent = (open ? 'Close all ' : 'Open all ') + (list.classList.contains('days') ? 'days' : 'stops');
 }));
+
+// destinations: a link like /destinations/#wineries opens that type
+const openType = () => { const d = location.hash && document.getElementById(location.hash.slice(1)); if (d && d.matches('details.dest-type')) { d.open = true; d.scrollIntoView(); } };
+window.addEventListener('hashchange', openType); openType();

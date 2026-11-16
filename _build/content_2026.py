@@ -126,9 +126,9 @@ MICE_HOTELS = [
          best='International conferences, forums, gala dinners and high-level business events; a strong choice for multi-day programmes.',
          rooms=143, meeting='6 function rooms (520 m²) + Moldova’s Convention Center (1,200 m², four divisible sections)', space=1720, largest='1,200 m² Convention Center',
          dining=['Apty’s Pub (lobby bar)', 'Ambassador Restaurant (all-day dining)', 'New York Restaurant & Bar (open 24 hours)', 'ZAXI rooftop restaurant (Asian fusion)']),
-    dict(name='Courtyard by Marriott Chișinău', stars=4, location='Next to MallDova shopping mall', web='https://www.marriott.com/',
+    dict(name='Courtyard by Marriott Chișinău', stars=4, location='21/A Arborilor St, next to MallDova shopping mall', web='https://www.marriott.com/en-us/hotels/kivcy-courtyard-chisinau/overview/',
          best='Business meetings, training sessions and small to medium corporate events, with international brand standards.',
-         rooms=118, meeting='285 m² of meeting and event space, modern audio-visual equipment', space=285, largest='flexible meeting space',
+         rooms=118, meeting='4 event rooms, 162 m² in total, up to 180 guests; modern audio-visual equipment (marriott.com)', space=162, largest='up to 180 guests',
          dining=['New York Restaurant (06:30–00:00, up to 85 guests)']),
     dict(name='MIMI Hotel & Business Center', stars=4, location='37 Maria Cebotari St, city centre', web='https://mimi-hotels.com/',
          best='Business meetings, training programmes, seminars and institutional events, with rooms, meetings and catering in one place.',
@@ -239,3 +239,48 @@ PROGRAMME_DAYS = {
         ('Gagauzia, the south of Moldova', 'B/L/D', 'Comrat, the Besalma museum, a cooking class in Congaz and the Comrat-Vin winery with dinner.'),
         ('Farewell to Moldova', 'B', 'Free time for shopping and transfer to the airport.')],
 }
+
+
+# ---- What's included (2026 brochures, "Services included")
+PROGRAMME_INCLUDED = {
+    'a-taste-of-moldova-5-days': ['Accommodation in twin/double rooms on BB, 4 nights in centrally located hotels', 'English-speaking guide for the entire itinerary',
+                                  'Comfortable transport for the whole itinerary (minibus, 9–20 seats)', 'Wine tours: Castel Mimi (3 wines), Cricova tour and tasting (4 wines)',
+                                  'Entry fees: Archaeology & History Museum in Chișinău, Old Orhei reserve, Arta Rustica carpet studio, Soroca fortress',
+                                  'Meals: 4 breakfasts, 3 lunches, 1 dinner as per programme', 'Meals for driver and guide'],
+    'atasteofmoldova': ['Accommodation in twin/double rooms on BB, 6 nights; single supplement on request', 'English-speaking guide for the entire itinerary',
+                        'Comfortable transport for the whole itinerary (minibus, 20 seats)', 'Wine tours and tastings: Castel Mimi (3 wines), Cricova (4 wines), KVINT distillery (5 divins)',
+                        'Entry fees: Archaeology & History Museum, Old Orhei reserve, Arta Rustica, Soroca fortress, Gagauz museum and folk programme, Tighina fortress',
+                        'Meals: 6 breakfasts, 5 lunches, 1 dinner as per programme', 'Meals for driver and guide'],
+    'culturewineandgastronomytour': ['Accommodation in twin rooms on BB, 7 nights; single supplement on request', 'English-speaking guide, including airport transfers',
+                                     'Local guides in the wineries and museums', 'Transport for the entire tour', 'Entrance fees to all sites in the programme',
+                                     'Full board (3-course menu and water)',
+                                     'Tastings: Cricova (4 wines), Château Vartely (4 wines), KVINT (5 divins), Vinuri de Comrat (4 wines), Mileștii Mici (tour), Château Cojușna (4 wines), Château Purcari (4 wines)',
+                                     'Culinary class in Gagauzia, caviar tour and tasting in Tiraspol', 'Meals for driver and guide', 'Water: 0.5 l per person daily'],
+    'countryside-tour': ['Accommodation in twin/double rooms on BB: 3 nights in Chișinău and 4 nights in the countryside; single supplement on request',
+                         'English-speaking guide for the entire itinerary', 'Comfortable transport for the whole itinerary',
+                         'Activities: Murano glass masterclass, Cricova tour, plăcintă and sarmale cooking classes, cheese tour and tasting (4 artisan cheeses), Château Vartely tour and tasting (4 wines), honey tour and tasting (3 types)',
+                         'Entry fees: Old Orhei reserve, Arta Rustica, Țipova monastery, Soroca fortress, Codrii reserve',
+                         'Meals: 7 breakfasts, 4 lunches, 3 dinners', 'Overnights and meals for driver and guide'],
+    'wine-and-gastronomy': ['Accommodation in twin rooms on BB, 5 nights in centrally located hotels; single supplement on request', 'English-speaking guide, including airport transfers',
+                            'Local guides in the wineries and museums', 'Transport for the entire tour', 'Entrance fees (museums, fortresses)', 'Full board (3-course menu and water)',
+                            'Tastings: INVINO oenotheque (6 wines), Cricova (4 wines), Château Vartely (4 wines), KVINT (5 divins), Comrat-Vin (4 wines)',
+                            'Culinary class in Gagauzia, caviar tour and tasting (2 types) in Tiraspol', 'Meals for driver and guide', 'Water: 0.5 l per person daily'],
+}
+PROGRAMME_HIGHLIGHTS = {  # only where the brochure has its own highlights page
+    'a-taste-of-moldova-5-days': ['Traditions, culture and history of separate regions, languages and food', 'One of the world’s largest underground wine cities',
+                                  'Mimi Castle, one of Moldova’s most iconic wine landmarks', 'Monasteries, rural villages and Old Orhei',
+                                  'The medieval fortress of Soroca on the Dniester', 'Hand-woven carpets, embroidery and crafts at Arta Rustica'],
+    'wine-and-gastronomy': ['A genuine taste of Moldovan culture and way of life', 'Guided tastings and food pairings at Château Vartely and the Cricova cellars',
+                            'Rural guest houses and warm local hospitality', 'Gagauz culture: Balkan traditions, Turkic language and pastoral cuisine',
+                            'Culinary master classes', 'Transnistria, a living museum of Soviet culture', 'The Aquatir sturgeon farm and a caviar tasting'],
+}
+
+# ---- Photos from Wikimedia Commons for the new tours (free licences; credits shown under each photo, from data/photo_credits.json)
+NEW_TOUR_PHOTOS = {
+    'atv-buket-moldavii': ['/img/commons/dniester-roghi.jpg', '/img/commons/dniester-molovata.jpg', '/img/wine-tasting-table.jpg'],
+    'taste-of-transnistria': ['/img/commons/tiraspol-suvorov-square.jpg', '/img/commons/kvint-distillery.jpg', '/img/commons/tighina-fortress.jpg'],
+    'codrii-reserve': ['/img/commons/codrii-forest.jpg', '/img/commons/hancu-monastery.jpg'],
+    'plaiul-fagului-mircesti': ['/img/commons/plaiul-fagului.jpg', '/img/wine-tasting-table.jpg'],
+}
+SPORT_TRUSTED = ['The Football Association (England)', 'German Football Association', 'Royal Dutch Football Association', 'Tottenham Hotspur',
+                 'Fenerbahçe SK', 'FC Basel', 'GNK Dinamo Zagreb', 'SK Slavia Prague']

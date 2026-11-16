@@ -14,10 +14,11 @@ SITE_PAGES = {p['slug']: p for p in DATA('pages.json')}
 POSTS = DATA('posts.json')
 from content_2026 import (WINERIES_2026, WINERIES_ON_REQUEST, AGENCY_PDF, TASTE5_DAYS, AGENCY_TOUR_TYPES, DAY_TOURS_2026, NEW_DAY_TOURS,
                           MICE_INTRO, MICE_PHILOSOPHY, MICE_WHY_MOLDOVA, MICE_SERVICES, MICE_WHY_US, MICE_HOTELS, SPORT_SINCE, SPORT_ASSOCIATIONS,
-                          SPORT_CLUBS, SPORT_SERVED, SPORT_SERVICES, SPORT_CATERING, SPORT_TRANSPORT, SPORT_TRAINING, SPORT_COORDINATION, SPORT_TIRASPOL, SPORT_WHY, PROGRAMME_DAYS, PROGRAMME_FACTS)
+                          SPORT_CLUBS, SPORT_SERVED, SPORT_SERVICES, SPORT_CATERING, SPORT_TRANSPORT, SPORT_TRAINING, SPORT_COORDINATION, SPORT_TIRASPOL, SPORT_WHY, PROGRAMME_DAYS, PROGRAMME_FACTS,
+                          PROGRAMME_INCLUDED, PROGRAMME_HIGHLIGHTS, NEW_TOUR_PHOTOS, SPORT_TRUSTED)
 e = html.escape
 # new day tours and the 5-day programme (client materials, 13.11.2026); the 2026 Word files also give the tours their new names
-TOURS += [dict(t, title=DAY_TOURS_2026[t['slug']]) for t in NEW_DAY_TOURS]
+TOURS += [dict(t, title=DAY_TOURS_2026[t['slug']], images=NEW_TOUR_PHOTOS.get(t['slug'], t['images'])) for t in NEW_DAY_TOURS]
 TOURS.append(dict(slug='a-taste-of-moldova-5-days', title='A Taste of Moldova (5 days)', kind='multi', cats=['multi-day-tours', 'culture-heritage', 'wine-tours'],
                   summary='Chișinău, the wine castle Mimi, Curchi and Old Orhei, the cellars of Cricova, Bessarabian carpets and the Soroca fortress in five days.',
                   card='Chișinău · Castel Mimi · Old Orhei · Cricova · Soroca', images=['/img/soroca.jpg', '/img/cricova.jpg', '/img/orheiul-vechi.jpg', '/img/carpet-museum.jpg'],
@@ -76,6 +77,14 @@ def rsrc(path, w):
     if not path.startswith('/img/') or path.endswith('.svg'):
         return path
     return f"/img/r/{w}/{path[5:].rsplit('.', 1)[0]}.webp"
+
+
+PHOTO_CREDITS = DATA('photo_credits.json')  # Wikimedia Commons photos: author, licence, file page
+
+
+def credit(path):
+    c = PHOTO_CREDITS.get(path)
+    return f'<a class="credit" href="{c[2]}" rel="noopener" target="_blank">Photo: {e(c[0] or "Wikimedia Commons")} · {e(c[1])}</a>' if c else ''
 
 
 def pic(path, alt='', sizes='(max-width: 640px) 90vw, 400px', cls='ph-img', eager=False):
@@ -197,7 +206,9 @@ def route_html(t):
     if t['slug'] in PROGRAMME_DAYS:
         rows = ''.join(f'<li><details><summary><span class="n">Day {n}</span><span class="t">{e(h)}<small>Meals: {m}</small></span></summary><p>{e(x)}</p></details></li>'
                        for n, (h, m, x) in enumerate(PROGRAMME_DAYS[t['slug']], 1))
-        return f'<div class="route-head"><h2>Day by day</h2><button class="route-all" type="button">Open all days</button></div><ol class="route days">{rows}</ol><p class="small">Meals: B breakfast · L lunch · D dinner.</p>'
+        pdf = f'<a class="route-pdf" href="{t["pdf"]}" download>{ic("f-route")}Full programme with prices (PDF)</a>' if t.get('pdf') else ''
+        return (f'<div class="route-head"><h2>Day by day</h2><span>{pdf}<button class="route-all" type="button">Open all days</button></span></div>'
+                f'<ol class="route days">{rows}</ol><p class="small">Meals: B breakfast · L lunch · D dinner.</p>')
     parts = tour_parts(t)
     if not parts or not parts[2]:
         return ''
@@ -252,9 +263,9 @@ def wa(msg, label='Chat on WhatsApp', cls='btn btn-wa'):
     return f'<a class="{cls} js-wa" href="#" data-msg="{e(msg)}">{WA_SVG}{e(label)}</a>'
 
 
-def quote_form(selected=None, compact=False, button='Send my request'):
-    opts = ''.join(f'<option{" selected" if t["title"] == selected else ""}>{e(t["title"])}</option>' for t in TOURS)
-    opts += f'<option{" selected" if selected == "custom" else ""}>Custom trip / not sure yet</option>'
+def quote_form(selected=None, compact=False, button='Send my request', tours=None, custom='Custom trip / not sure yet'):
+    opts = ''.join(f'<option{" selected" if t["title"] == selected else ""}>{e(t["title"])}</option>' for t in (tours or TOURS))
+    opts += f'<option{" selected" if selected == "custom" else ""}>{e(custom)}</option>'
     return f'''<form class="quote js-form" action="/thank-you/" novalidate>
 <div class="full"><label for="f-tour">Which tour?</label><select id="f-tour" name="tour">{opts}</select></div>
 <div class="row"><div><label for="f-date">Arrival date</label><input id="f-date" name="date" type="date" data-err="Please choose a date in the future."><small class="hint">Approximate is fine</small></div>
@@ -704,7 +715,7 @@ def builder_page():
 def good_to_know(t):
     k = t['slug']
     items = [('f-route', 'Start & finish', 'Your guide and driver pick you up from an agreed location in Chișinău.') if t['kind'] == 'day'
-             else ('f-route', 'Programme', 'The full day-by-day programme and inclusions come with your quote.'),
+             else ('f-route', 'Programme', 'Full programme with prices in the PDF; every day can be adjusted to your group.'),
              ('f-bird', 'Guide', 'Licensed English-speaking guide. Other languages on request.'),
              ('f-romb', 'Private tour', 'Only your group, with transport sized to it: car, minivan or minibus.')]
     if k in CELLAR_TOURS:
@@ -719,7 +730,7 @@ def good_to_know(t):
 
 def tour_page(t):
     imgs = t['images'][:5]
-    gallery = ''.join('<div>' + pic(i, f'{t["title"]} photo {n + 1}', sizes='(max-width: 640px) 100vw, 50vw', eager=n == 0) + '</div>'
+    gallery = ''.join('<div>' + pic(i, f'{t["title"]} photo {n + 1}', sizes='(max-width: 640px) 100vw, 50vw', eager=n == 0) + credit(i) + '</div>'
                       for n, i in enumerate(imgs))
     hl = ''.join(f'<li>{e(h)}</li>' for h in t.get('highlights', []))
     pt = t.get('price_table')
@@ -733,8 +744,8 @@ def tour_page(t):
         ex = ''.join(f'<li>{e(x)}</li>' for x in t.get('extras', []))
         incl = f'''<h2>What’s included</h2><div class="inc"><div><h3>Included</h3><ul class="ticks">{''.join(f"<li>{e(x)}</li>" for x in t['inclusions'])}</ul></div>
 {f'<div><h3>Optional extras</h3><ul class="plus">{ex}</ul></div>' if ex else ''}</div>'''
-    elif t['kind'] == 'multi':
-        incl = '<h2>What’s included</h2><div class="todo"><b>De completat: incluse / neincluse</b>Pe site nu există încă lista pentru acest tur (cazare, transport, ghid, degustări, mese).</div>'
+    elif t['slug'] in PROGRAMME_INCLUDED:
+        incl = '<h2>What’s included</h2><ul class="ticks">' + ''.join(f'<li>{e(x)}</li>' for x in PROGRAMME_INCLUDED[t['slug']]) + '</ul>'
     wineries = ''
     if t.get('wineries'):
         wineries = '<h2>Choose your winery</h2><div class="wineries-grid">' + ''.join(
@@ -774,6 +785,7 @@ def tour_page(t):
         hl = ''
         parts = tp[1] or [f'<p>{e(t["summary"])}</p>']
     elif t['slug'] in PROGRAMME_DAYS:
+        hl = ''.join(f'<li>{e(h)}</li>' for h in PROGRAMME_HIGHLIGHTS.get(t['slug'], []))  # the old site highlights repeated the days
         parts = [f'<p>{e(t["summary"])}</p>']
     else:
         parts = tour_body(t).split('\n')
@@ -783,27 +795,25 @@ def tour_page(t):
              else (('Tours', '/tours/'), (CATEGORIES[t['cats'][0]]['name'], f"/tours/{t['cats'][0]}/")))
     if t['kind'] == 'multi':
         related = [r for r in TOURS if r['kind'] == 'multi' and r is not t][:3]
-    pdf_box = (f'<div class="pdf-box">{ic("f-route", "ic ic-lg")}<div><b>Full programme with prices</b><span>PDF for travel agencies · {e(t["duration"])} · groups from 5 people</span></div>'
-               f'<a class="btn btn-primary" href="{t["pdf"]}" download>Download PDF</a></div>') if t.get('pdf') else ''
     body = f'''<div class="wrap">{crumbs(*trail, (t['title'], None))}
 <div class="gallery-wrap"><div class="gallery n{len(imgs)}" role="region" aria-label="Photos of the tour" tabindex="0">{gallery}</div>
 {f'<div class="g-dots" aria-hidden="true">{"<i></i>" * len(imgs)}</div>' if len(imgs) > 1 else ''}</div>
 <div class="tour-layout"><div class="tour-main">
 <p class="eyebrow">{cat_links}</p>
 <h1>{e(t['title'])}</h1>
-<div class="chips static"><span class="chip">{ic('f-sun')}{e(t['duration'])}</span><span class="chip">{ic('f-romb')}{'From ' + str(t['min_pax']) + ' people' if t.get('min_pax') else 'Groups from 5' if t['kind'] == 'multi' else 'Private tour'}</span><span class="chip">{ic('f-bird')}Licensed guide</span>{f'<span class="chip">{ic("f-hook")}Passport needed</span>' if tn else ''}</div>
+<div class="chips static"><span class="chip">{ic('f-sun')}{e(t['duration'])}</span><span class="chip">{ic('f-romb')}{'From ' + str(t['min_pax']) + ' people' if t.get('min_pax') else 'Groups from 5' if t['kind'] == 'multi' else 'Private tour'}</span><span class="chip">{ic('f-bird')}Licensed guide</span>{f'<span class="chip">{ic("f-hook")}Passport needed</span>' if tn else ''}{f'<a class="chip chip-pdf" href="{t["pdf"]}" download>{ic("f-route")}PDF programme</a>' if t.get('pdf') else ''}</div>
 <p class="lead hook">{e(lead)}</p>
 <div class="quick-book"><div class="qb-price"><span>{quick_label}</span><b>{quick_price}</b></div>
 <div class="qb-ctas"><a class="btn btn-primary" href="#book">Get my price</a>{wa(msg, 'WhatsApp')}</div></div>
-{TRANSNISTRIA_WARN if tn else ''}{pdf_box}
-{f'<h2>Highlights</h2><ul class="hl">{hl}</ul>' if hl else ''}
-{route}{programme_facts(t)}
+{TRANSNISTRIA_WARN if tn else ''}{programme_facts(t)}
+{route if t['kind'] == 'multi' else ''}{f'<h2>Highlights</h2><ul class="hl">{hl}</ul>' if hl else ''}
+{route if t['kind'] != 'multi' else ''}
 {table}{incl}{wineries}{good_to_know(t)}
 <div class="tour-more"><h2>About this tour</h2><div class="prose">{about}</div>
 <h2>Questions</h2>{faq_html(faq_keys)}</div>
 </div>
 <aside class="book" id="book"{book_attr}>{price_box}
-{quote_form(t['title'], compact=True, button='Request group rates' if t['kind'] == 'multi' else 'Get my price')}
+{quote_form(t['title'], compact=True, button='Request group rates' if t['kind'] == 'multi' else 'Get my price', **({'tours': MULTI, 'custom': 'Custom programme'} if t['kind'] == 'multi' else {}))}
 {wa(msg, 'Ask on WhatsApp', 'btn btn-wa wide')}
 <ul class="perks"><li>Free request, no obligation</li><li>Itinerary adjusted to you</li><li>Or call {SITE['phone']}</li></ul></aside>
 </div></div>
@@ -915,15 +925,12 @@ MULTI = [t for t in TOURS if t['kind'] == 'multi']
 
 def tours_index():
     """Tours = Popular tours (1-day trips live; weekend trips and city breaks soon) + Wineries + By interest (soon)."""
-    popular = (f'<a class="chip on" href="/tours/day-trips/">{ic("f-sun")}1-day trips <small>{len(DAY_TRIPS)}</small></a>'
-               + soon_chip('Weekend trips (2–3 days)') + soon_chip('City breaks'))
-    interest = ''.join(soon_chip(n) for n in ('Wine tours', 'Culture & heritage', 'Nature & countryside', 'Active trips'))
+    popular = f'<a class="chip on" href="/tours/day-trips/">{ic("f-sun")}1-day trips <small>{len(DAY_TRIPS)}</small></a>'
     body = page_hero('Tours', 'Tours in Moldova', 'Private 1-day trips from Chișinău and wine tastings at 13 wineries. Every tour can be adjusted to your dates.', '/img/cricova.jpg') + f'''
 <section class="section"><div class="wrap">{crumbs(('Tours', None))}
-<div class="tour-filters">
-<div><h3>Popular tours</h3><div class="chips">{popular}</div></div>
-<div><h3>Wineries &amp; wine tastings</h3><div class="chips"><a class="chip" href="/tours/wineries/">{ic("f-glass")}Choose your winery <small>13</small></a></div></div>
-<div><h3>By interest</h3><div class="chips">{interest}</div></div></div>
+<div class="chips">{popular}<a class="chip" href="/tours/wineries/">{ic("f-glass")}Wineries &amp; wine tastings <small>7</small></a>
+<a class="chip" href="/travel-agencies/tour-samples/">{ic("f-route")}Multi-day programmes <small>{len(MULTI)}</small></a></div>
+<p class="small">Coming soon: weekend trips (2–3 days), city breaks and tours by interest.</p>
 <h2 class="mb mt">1-day trips from Chișinău</h2>
 <div class="grid g3">{''.join(card(t) for t in DAY_TRIPS)}</div>
 <p class="small mt">Prices are being updated for 2027. Travel agency? See our <a href="/travel-agencies/tour-samples/">customized tour samples</a>.</p>
@@ -942,15 +949,15 @@ def wineries_page():
         cards.append(f"""<article class="winery-card" id="{w['key']}"><div class="wc-ph">{pic(f"/img/wineries/{w['key']}.jpg", w['name'], sizes='(max-width: 980px) 100vw, 560px')}</div>
 <div class="wc-body"><h3>{e(w['name'])}</h3>
 <p class="wc-meta">{ic('f-sun')}{e(w['days'])}, {e(w['hours'])}<span>From <b>€{w['from_eur']}</b> per person</span></p>
-<p>{e(w['text'])}</p><h4>Tastings</h4><ul class="ticks">{opts}</ul>{note}
-<p class="small">Tours in {e(w['langs'])}. Price per person, depends on group size; transport from Chișinău and back included.</p>
+<p>{e(w['text'])}</p><details class="tastings"><summary>{len(w['options'])} tastings to choose from</summary><ul class="ticks">{opts}</ul>{note}
+<p class="small">Tours in {e(w['langs'])}. Price per person, depends on group size; transport from Chișinău and back included.</p></details>
 <div class="wc-ctas"><a class="btn btn-primary" href="{QUOTE}">Request this tasting</a>{wa(f"Hello! I’d like a tour and tasting at {w['name']}.", 'WhatsApp')}</div></div></article>""")
     others = ''.join(f'<li>{e(n)}</li>' for n in WINERIES_ON_REQUEST)
     body = page_hero('Tours', 'Wineries & wine tastings', 'Seven of Moldova’s best wineries, from Guinness-record cellars to family estates. Transport from Chișinău, tasting and guide arranged.', '/img/milestii-mici.jpg') + f"""
 <section class="section"><div class="wrap">{crumbs(('Tours', '/tours/'), ('Wineries & wine tastings', None))}
-<div class="pdf-box">{ic('f-glass', 'ic ic-lg')}<div><b>Wine Tours &amp; Tastings 2026</b><span>All wineries, tastings and prices by group size (PDF, 8 pages)</span></div>
-<a class="btn btn-primary" href="/pdf/wine-tours-tastings-2026.pdf" download>Download PDF</a></div>
-<div class="chips mb">{''.join(f'<a class="chip" href="#{w["key"]}">{e(w["name"])}</a>' for w in WINERIES_2026)}</div>
+<p class="lead">Choose a winery below and ask for a tasting. All wineries, tastings and prices by group size are in our
+<a class="pdf-inline" href="/pdf/wine-tours-tastings-2026.pdf" download>{ic('f-glass')}Wine Tours &amp; Tastings 2026 (PDF)</a>.</p>
+<div class="chips mb cat-chips">{''.join(f'<a class="chip" href="#{w["key"]}">{e(w["name"])}</a>' for w in WINERIES_2026)}</div>
 <div class="winery-list">{''.join(cards)}</div>
 <h2 class="mt">Also on request</h2><p>We also arrange visits and tastings at:</p><ul class="ticks cols2">{others}</ul>
 </div></section>{cta_band('Which winery would you like to visit?', 'Hello! I’d like a wine tasting in Moldova.')}"""
@@ -959,18 +966,26 @@ def wineries_page():
            body, [crumbs_ld(('Tours', '/tours/'), ('Wineries & wine tastings', '/tours/wineries/'))])
 
 
+def programme_card(t):
+    """Card for an agency programme: two actions (open the programme, download its PDF), so it is not one big link."""
+    f = PROGRAMME_FACTS.get(t['slug'], ('From 5 people', '', None))
+    return f"""<article class="card prog-card"><a class="ph" href="{t['url']}" tabindex="-1" aria-hidden="true">{pic(t['images'][0], t['title'])}<span class="dur">{e(t['duration'])}</span></a>
+<div class="body"><h3><a href="{t['url']}">{e(t['title'])}</a></h3><p class="meta">{e(t['card'])}</p>
+<p class="prog-facts">{ic('f-romb')}{e(f[0])} · {e(f[1])}</p>
+<div class="prog-ctas"><a class="btn btn-primary" href="{t['url']}">View programme</a><a class="btn btn-outline" href="{t['pdf']}" download>{ic('f-route')}PDF</a></div></div></article>"""
+
+
 def tour_samples():
-    """For travel agencies: the multi-day programmes as samples, each with its page and its PDF (prices only in the PDF)."""
-    rows = ''.join(f"""<li><a href="{t['url']}">{e(t['title'])}</a><span>{e(t['duration'])}</span><a class="more" href="{t['pdf']}" download>PDF ↓</a></li>""" for t in MULTI)
+    """For travel agencies: the multi-day programmes as samples; each card opens the programme or downloads its PDF (prices only in the PDF)."""
     types = ''.join(f'<li>{e(x)}</li>' for x in AGENCY_TOUR_TYPES)
     body = page_hero('For travel agencies', 'Customized tour samples', 'Multi-day programmes we run for groups formed by our partners abroad. Every sample can be adjusted to your group, dates and budget.', '/img/purcari.jpg') + f"""
 <section class="section"><div class="wrap">{crumbs(('For travel agencies', None), ('Customized tour samples', None))}
-<div class="note"><b>How it works:</b> you form the group, we organise everything in Moldova: hotels, transport, guides, tastings and meals. Group rates on request, groups from 5 people. Each programme has a PDF you can send to your clients.</div>
-<div class="grid g3 mt">{''.join(card(t) for t in MULTI)}</div>
-<h2 class="mt">All programmes as PDF</h2><ul class="pdf-list">{rows}</ul>
-<div class="contact-layout mt"><div class="prose"><h2>What we can organise for your groups</h2><ul class="ticks">{types}</ul>
-<p>A DMC based in Chișinău since 2001, repeatedly awarded Best Inbound Travel Agency in Moldova, with one local contact for the whole programme.</p></div>
-<div class="form-card" id="quote"><h2>Request a programme</h2><p class="small">Tell us the dates, group size and the programme you like.</p>{quote_form('custom', button='Request a proposal')}</div></div>
+<div class="note"><b>How it works:</b> you form the group, we organise everything in Moldova: hotels, transport, guides, tastings and meals. Group rates on request, groups from 5 people. Each programme has a PDF with prices that you can send to your clients.</div>
+<div class="grid g3 mt">{''.join(programme_card(t) for t in MULTI)}</div>
+<div class="contact-layout mt"><div class="prose"><h2>What we can organise for your groups</h2><ul class="ticks cols2">{types}</ul>
+<p>A DMC based in Chișinău since 2001, repeatedly awarded Best Inbound Travel Agency in Moldova, with one local contact for the whole programme.</p>
+<div class="partner-contact">{ic('f-bird', 'ic ic-lg')}<div><b>Contact for partners</b>Incoming Tourism Department · <a href="mailto:{SITE['email']}">{SITE['email']}</a> · <a href="{SITE['phone_href']}">{SITE['phone']}</a></div></div></div>
+<div class="form-card" id="quote"><h2>Request a programme</h2><p class="small">Tell us the dates, group size and the programme you like.</p>{quote_form('custom', button='Request a proposal', tours=MULTI, custom='Custom programme')}</div></div>
 </div></section>"""
     layout('/travel-agencies/tour-samples/', 'Moldova Tour Samples for Travel Agencies | Enjoy Moldova DMC',
            'Multi-day Moldova programmes for travel agencies, with PDFs: A Taste of Moldova, Culture, Wine & Gastronomy, Wine & Gastronomy, Countryside. Group rates on request.',
@@ -1042,7 +1057,7 @@ def dest_by_type():
             rows.append(f'<li class="{"" if slugs else "req"}">{ic(icon)}<div><b>{title}</b>{state}<br>{e(text)}</div></li>')
         body = (f'<ul class="gtk">{"".join(rows)}</ul>' if rows else
                 '<div class="todo"><b>De completat: lista festivalurilor</b>Echipa trimite lista și o descriere scurtă a fiecăruia.</div>')
-        out.append(f'<section class="dest-type" id="{key}"><h2>{e(name)} <small>{len(rows) or ""}</small></h2>{body}</section>')
+        out.append(f'<details class="dest-type" id="{key}"{" open" if not out else ""}><summary><h2>{e(name)} <small>{len(rows) or ""}</small></h2></summary>{body}</details>')
     return f'''<section class="section pt0"><div class="wrap"><h2 class="mb">Destinations by type</h2>
 <div class="chips mb">{''.join(f'<a class="chip" href="#{k}">{e(n)}</a>' for k, n in DEST_TYPES)}</div>
 <p class="small mb"><span class="d-state on">In our tours</span> places we visit on our tours · <span class="d-state">On request</span> we arrange a visit on request.</p>
@@ -1098,8 +1113,7 @@ def text_to_html(slug, text):
     return '\n'.join(out)
 
 
-PAGE_PDF = {'about-moldova/facts': '<div class="pdf-box"><svg class="ic ic-lg"><use href="#f-tulip"/></svg><div><b>Facts about Moldova</b><span>The country in short (PDF, 3 pages)</span></div>'
-                                   '<a class="btn btn-primary" href="/pdf/facts-about-moldova.pdf" download>Download PDF</a></div>'}
+PAGE_PDF = {'about-moldova/facts': '<p class="lead">The country in short, on three pages: <a class="pdf-inline" href="/pdf/facts-about-moldova.pdf" download><svg class="ic"><use href="#f-tulip"/></svg>Facts about Moldova (PDF)</a>.</p>'}
 
 
 def content_page(key, section, title, intro, src_slugs):
@@ -1405,7 +1419,8 @@ def rows_html(items, icon='f-romb'):
 
 
 def mice_pages():
-    cards = ''.join(f'<a class="card link-card" href="{u}"><div class="body"><h3>{e(n)}</h3><div class="foot"><span class="more">Read →</span></div></div></a>' for u, n in MICE_PAGES)
+    imgs = {'/mice/why-moldova/': '/img/wine-tasting-table.jpg', '/mice/services/': '/img/cricova.jpg', '/mice/hotels-venues/': '/img/commons/radisson-blu-leogrand.jpg', '/mice/sport-travel/': '/img/commons/zimbru-stadium.jpg'}
+    cards = ''.join(f'<a class="card guide-card" href="{u}"><div class="ph">{pic(imgs[u], n, sizes="(max-width: 640px) 90vw, 560px")}</div><div class="body"><h3>{e(n)}</h3><div class="foot"><span class="more">Read →</span></div></div></a>' for u, n in MICE_PAGES)
     intro = ''.join(f'<p>{e(x)}</p>' for x in MICE_INTRO)
     mice_layout('/mice/', 'Your trusted local DMC partner in Moldova', 'Conferences, seminars, corporate meetings, incentive trips and sport travel, organised by a local DMC since 2001.',
                 '/img/cricova.jpg', f"""<div class="prose">{intro}<p class="tagline-dark">{e(MICE_PHILOSOPHY)}</p></div><div class="grid g2 mt">{cards}</div>""",
@@ -1421,25 +1436,29 @@ def mice_pages():
     table = '<div class="ptable cmp"><table><thead><tr><th>Hotel</th><th>Rooms</th><th>Meeting space</th><th>Largest room</th></tr></thead><tbody>' + ''.join(
         f'<tr><th><a href="#h{n}">{e(h["name"])}</a> {"★" * h["stars"]}</th><td>{h["rooms"]}</td><td>{f"{h["space"]:,} m²" if h["space"] else "3 halls"}</td><td>{e(h["largest"])}</td></tr>'
         for n, h in enumerate(MICE_HOTELS)) + '</tbody></table></div>'
-    hotels = ''.join(f"""<article class="hotel-card" id="h{n}"><h3>{e(h['name'])} <span class="stars">{'★' * h['stars']}</span></h3>
+    hotel_img = {'Radisson Blu Leogrand Hotel & Convention Center': '/img/commons/radisson-blu-leogrand.jpg'}
+    hotels = ''.join(f"""<article class="hotel-card" id="h{n}">{f'<div class="hotel-ph">{pic(hotel_img[h["name"]], h["name"], sizes="(max-width: 980px) 100vw, 760px")}{credit(hotel_img[h["name"]])}</div>' if h['name'] in hotel_img else ''}<h3>{e(h['name'])} <span class="stars">{'★' * h['stars']}</span></h3>
 <p class="wc-meta">{ic('f-route')}{e(h['location'])}</p><p><b>Best for:</b> {e(h['best'])}</p>
 <dl class="dest-facts"><div>{ic('f-tower')}<dt>Rooms</dt><dd>{h['rooms']}</dd></div><div>{ic('f-romb')}<dt>Meetings</dt><dd>{e(h['meeting'])}</dd></div></dl>
 <p><b>Dining:</b> {e(' · '.join(h['dining']))}</p><p><a class="more" href="{h['web']}" rel="noopener" target="_blank">Hotel website →</a></p></article>""" for n, h in enumerate(MICE_HOTELS))
     mice_layout('/mice/hotels-venues/', 'Hotels & venues in Chișinău', 'Conference hotels in the city centre, from 74 to 143 rooms and meeting rooms for up to 1,200 m².', '/img/hero-vineyard.jpg',
-                f'<h2>At a glance</h2>{table}{hotels}<div class="todo mt"><b>De completat</b>Poze ale hotelurilor și locațiile speciale (crame, conace) pentru evenimente.</div>',
+                f'<h2>At a glance</h2>{table}{hotels}<div class="todo mt"><b>De completat</b>Poze ale hotelurilor (Courtyard, MIMI, Bristol, Mercure) și locațiile speciale (crame, conace) pentru evenimente. Courtyard: 162 m² după marriott.com, 285 m² în prezentare; de confirmat.</div>',
                 'Conference hotels in Chișinău: Radisson Blu Leogrand, Courtyard by Marriott, MIMI Hotel, Bristol Central Park and Mercure Jazz, with rooms and meeting capacity.')
     lst = lambda xs: '<ul class="ticks">' + ''.join(f'<li>{e(x)}</li>' for x in xs) + '</ul>'
     sport = f"""<div class="prose"><p class="lead">Your team. Your game. Our responsibility.</p>
 <p>Enjoy Moldova by Solei Tourism is a Moldovan DMC specialising in sports travel, team logistics and hospitality for international sports delegations. Since {SPORT_SINCE} we have supported professional football clubs, national teams, youth teams in UEFA youth competitions, beach volleyball teams and other delegations.</p></div>
+<div class="sport-ph">{pic('/img/commons/zimbru-stadium.jpg', 'Zimbru Stadium, Chișinău', sizes='(max-width: 980px) 100vw, 760px')}{credit('/img/commons/zimbru-stadium.jpg')}</div>
 <div class="proof-mini"><div><b>{len(SPORT_ASSOCIATIONS)}</b><span>national football associations</span></div><div><b>{len(SPORT_CLUBS)}</b><span>international clubs</span></div><div><b>{SPORT_SINCE}</b><span>first team welcomed</span></div></div>
+<p class="trusted-by"><b>Trusted by</b> {e(' · '.join(SPORT_TRUSTED))} <span>and many more</span></p>
 <h2>Sports we serve</h2>{rows_html([('f-star', h, x) for h, x in SPORT_SERVED])}
-<h2 class="mt">Complete team travel &amp; logistics</h2>{lst(SPORT_SERVICES)}
-<h2 class="mt">Accommodation &amp; catering</h2><p>Hotels in Chișinău and beyond, chosen around the team’s schedule, training locations and competition venues. Meals go beyond standard hotel service:</p>{lst(SPORT_CATERING)}
-<h2 class="mt">Transport</h2>{lst(SPORT_TRANSPORT)}
-<h2 class="mt">Training facilities &amp; stadiums</h2>{lst(SPORT_TRAINING)}
-<h2 class="mt">Dedicated coordination, 24/7</h2>{lst(SPORT_COORDINATION)}
-<h2 class="mt">Our experience in Tiraspol</h2><p>Full ground handling for clubs playing away matches in Tiraspol: accommodation, transport, catering, match logistics and a coordinator who stays overnight when required. Among them:</p>{lst(SPORT_TIRASPOL)}
-<h2 class="mt">Teams we have assisted</h2><div class="team-lists"><div><h3>National football associations</h3>{lst(SPORT_ASSOCIATIONS)}</div><div><h3>International clubs</h3>{lst(SPORT_CLUBS)}</div></div>
+<details class="fold"><summary><h2>Complete team travel &amp; logistics</h2></summary>{lst(SPORT_SERVICES).replace('class="ticks"', 'class="ticks cols2"', 1)}</details>
+<details class="fold"><summary><h2>Accommodation &amp; catering</h2></summary><p>Hotels in Chișinău and beyond, chosen around the team’s schedule, training locations and competition venues. Meals go beyond standard hotel service:</p>{lst(SPORT_CATERING).replace('class="ticks"', 'class="ticks cols2"', 1)}</details>
+<details class="fold"><summary><h2>Transport</h2></summary>{lst(SPORT_TRANSPORT).replace('class="ticks"', 'class="ticks cols2"', 1)}</details>
+<details class="fold"><summary><h2>Training facilities &amp; stadiums</h2></summary>{lst(SPORT_TRAINING)}</details>
+<details class="fold"><summary><h2>Dedicated coordination, 24/7</h2></summary>{lst(SPORT_COORDINATION).replace('class="ticks"', 'class="ticks cols2"', 1)}</details>
+<details class="fold"><summary><h2>Our experience in Tiraspol</h2></summary><p>Full ground handling for clubs playing away matches in Tiraspol: accommodation, transport, catering, match logistics and a coordinator who stays overnight when required. Among them:</p>{lst(SPORT_TIRASPOL)}</details>
+<h2 class="mt">Teams we have assisted</h2><details class="team-all"><summary>Show all {len(SPORT_ASSOCIATIONS) + len(SPORT_CLUBS)} teams</summary>
+<div class="team-lists"><div><h3>National football associations</h3>{lst(SPORT_ASSOCIATIONS)}</div><div><h3>International clubs</h3>{lst(SPORT_CLUBS)}</div></div></details>
 <h2 class="mt">Why choose Enjoy Moldova</h2>{rows_html([('f-romb', h, x) for h, x in SPORT_WHY])}
 <p class="tagline-dark mt">We take care of the arrangements on the ground, so your players and staff can focus on the game.</p>"""
     mice_layout('/mice/sport-travel/', 'Sport team travel & logistics', f'Football clubs, national teams and sports delegations in Moldova since {SPORT_SINCE}: hotels, meals, transport, training pitches and 24/7 support.',
