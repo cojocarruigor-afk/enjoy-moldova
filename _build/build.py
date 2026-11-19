@@ -13,7 +13,7 @@ SITE_TOURS = DATA('tours_site.json')
 SITE_PAGES = {p['slug']: p for p in DATA('pages.json')}
 POSTS = DATA('posts.json')
 from content_2026 import (WINERIES_2026, WINERIES_ON_REQUEST, AGENCY_PDF, TASTE5_DAYS, AGENCY_TOUR_TYPES, DAY_TOURS_2026, NEW_DAY_TOURS,
-                          MICE_INTRO, MICE_PHILOSOPHY, MICE_WHY_MOLDOVA, MICE_SERVICES, MICE_WHY_US, MICE_HOTELS, SPORT_SINCE, SPORT_ASSOCIATIONS,
+                          MICE_INTRO, MICE_PHILOSOPHY, MICE_WHY_MOLDOVA, MICE_WHY_DETAILS, MICE_SERVICES, MICE_WHY_US, MICE_HOTELS, SPORT_SINCE, SPORT_ASSOCIATIONS,
                           SPORT_CLUBS, SPORT_SERVED, SPORT_SERVICES, SPORT_CATERING, SPORT_TRANSPORT, SPORT_TRAINING, SPORT_COORDINATION, SPORT_TIRASPOL, SPORT_WHY, PROGRAMME_DAYS, PROGRAMME_FACTS,
                           PROGRAMME_INCLUDED, PROGRAMME_HIGHLIGHTS, NEW_TOUR_PHOTOS, SPORT_TRUSTED)
 e = html.escape
@@ -1449,7 +1449,8 @@ def mice_pages():
     tabs = ''.join(f'<button class="ws-tab" role="tab" id="ws-t{n}" aria-controls="ws-p{n}" aria-selected="{"true" if n == 1 else "false"}" tabindex="{0 if n == 1 else -1}"><span class="ws-n">{n:02d}</span><span>{e(h)}</span><i class="ws-bar"></i></button>'
                    for n, ((_, h, x), im) in enumerate(why, 1))
     panels = ''.join(f"""<div class="ws-panel" role="tabpanel" id="ws-p{n}" aria-labelledby="ws-t{n}"><div class="ws-ph">{pic(im, h, sizes='(max-width: 980px) 90vw, 680px', eager=n == 1)}</div>
-<div class="ws-tx"><span class="ws-n">{n:02d} / {len(why):02d}</span><h2>{e(h)}</h2><p>{e(x)}</p></div></div>""" for n, ((_, h, x), im) in enumerate(why, 1))
+<div class="ws-tx"><span class="ws-n">{n:02d} / {len(why):02d}</span><h2>{e(h)}</h2><p>{e(x)}</p>
+<div class="ws-more"><h3>{e(dt)}</h3><ul class="{"ws-list cols" if max(len(i) for i in items) < 60 else "ws-list"}">{"".join(f"<li>{e(i)}</li>" for i in items)}</ul><a class="ws-link" href="{lk[1]}">{e(lk[0])} →</a></div></div></div>""" for n, (((_, h, x), im), (dt, items, lk)) in enumerate(zip(why, MICE_WHY_DETAILS), 1))
     formats = ''.join(f'<li>{e(x)}</li>' for x in ('Executive meetings', 'Conferences', 'Incentive trips', 'Team building', 'Corporate celebrations'))
     names = {}
     for im in ['/img/unsplash/meeting-room.jpg'] + why_img:

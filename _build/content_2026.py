@@ -284,3 +284,39 @@ NEW_TOUR_PHOTOS = {
 }
 SPORT_TRUSTED = ['The Football Association (England)', 'German Football Association', 'Royal Dutch Football Association', 'Tottenham Hotspur',
                  'Fenerbahçe SK', 'FC Basel', 'GNK Dinamo Zagreb', 'SK Slavia Prague']
+
+
+# details under each "Why choose Moldova" reason, all from the client's Drive folder (MICE presentation, Wine Tours 2026, day-trip texts)
+MICE_WHY_DETAILS = [
+    ('Your local DMC partner', [
+        'Founded in 2001: over two decades of experience in tourism, business travel and MICE',
+        'Tailored solutions for international tour operators, corporate clients, event agencies and individual travelers',
+        'Strong professional relationships with airlines, hotels, transport providers, travel companies and international industry associations',
+        'Awarded Best Inbound Travel Agency in the Republic of Moldova (Moldova Tourism Awards 2024)',
+    ], ('About us', '/about-us/')),
+    ('Conference hotels in Chișinău', [
+        'Radisson Blu Leogrand 5★: 143 rooms, six function rooms (520 sq m) and Moldova’s Convention Center (1,200 sq m, four divisible sections)',
+        'Courtyard by Marriott 4★: modern meeting and event space with audio-visual equipment, next to MallDova',
+        'MIMI Hotel & Business Center 4★: 108 rooms, six conference rooms for 10 to 150 participants',
+        'Bristol Central Park 4★: 114 rooms, three halls for up to 120, 100 and 30 participants',
+        'Mercure Chisinau Center Jazz 4★: 74 rooms, three meeting rooms, the largest about 150 sq m for up to 130 participants',
+    ], ('Hotels & venues', '/mice/hotels-venues/')),
+    ('Wineries for tastings and events', [
+        'Cricova Wine Cellars', 'Château Purcari', 'Mileștii Mici Wine Cellars', 'Castel Mimi', 'Château Vartely', 'Château Cojușna', 'Asconi Winery',
+    ], ('Wine tours & tastings', '/tours/wineries/')),
+    ('Cultural programmes for your group', [
+        'Old Orhei cave monastery and archaeological complex', 'Petru Costin Gallery of Collections & Mileștii Mici',
+        'Soviet Transnistria: Bender & Tiraspol', 'Gagauzia: culture, traditions & hospitality',
+        'Țipova Reserve & Fromage Cheese Farm', 'Codrii Reserve: nature, honey & heritage', 'Plaiul Fagului & Crama Mircești',
+    ], ('All day trips', '/tours/day-trips/')),
+    ('Formats we organise', [
+        'Executive meetings', 'Conferences', 'Incentive trips', 'Team-building activities', 'Corporate celebrations',
+        'Beyond the business agenda: we enrich corporate programs with wine experiences, gastronomy, cultural discoveries and team-building activities that showcase the best of Moldova',
+        'Pre- and post-conference tours: guided city tours, winery visits and cultural experiences across Moldova',
+    ], ('Our services', '/mice/services/')),
+    ('Coordinated through one local point of contact', [
+        'Conference venue & meeting facilities', 'Audio-visual & technical support', 'Accommodation', 'Catering services',
+        'Transportation & transfers', 'Registration & on-site assistance', 'Interpretation & translation services',
+        'Conference materials & branding', 'Social & networking programs', 'Pre- and post-conference tours',
+    ], ('Our services', '/mice/services/')),
+]

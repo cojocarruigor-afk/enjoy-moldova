@@ -319,8 +319,11 @@ $$('.js-switch').forEach(box => {
   box.append(dots);
   const mark = () => { const k = Math.round(track.scrollLeft / (panels[0].offsetWidth + 12)); $$('button', dots).forEach((b, n) => b.toggleAttribute('aria-current', n === k)); };
   track.addEventListener('scroll', mark, { passive: true });
-  box.classList.add('ready'); show(0); start(); mark();
-  wide.addEventListener('change', start);
+  // desktop: keep the block as tall as the tallest panel, so the page does not jump when it switches
+  const fit = () => { track.style.minHeight = ''; if (wide.matches) track.style.minHeight = Math.max(...panels.map(p => [...p.children].reduce((h, c) => h + c.offsetHeight, 2))) + 'px'; };
+  box.classList.add('ready'); show(0); start(); mark(); fit();
+  wide.addEventListener('change', () => { start(); fit(); });
+  window.addEventListener('resize', fit); window.addEventListener('load', fit);
 });
 
 // sections that ease in when they scroll into view
