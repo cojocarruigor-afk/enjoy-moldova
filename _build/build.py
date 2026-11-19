@@ -1462,8 +1462,7 @@ def mice_pages():
 <ul class="wl-facts"><li><b>2001</b><span>local DMC since</span></li><li><b>5</b><span>conference hotels in Chișinău</span></li><li><b>1,200 m²</b><span>largest convention center</span></li><li><b>7</b><span>partner wineries</span></li><li><b>10</b><span>MICE services from one partner</span></li></ul></section>
 <div class="why-switch reveal js-switch"><div class="ws-tabs" role="tablist" aria-label="Six reasons to choose Moldova">{tabs}</div><div class="ws-panels">{panels}</div></div>
 <div class="why-band reveal"><p>Make business happen.<br>Make Moldova memorable.</p><div class="ctas"><a class="btn btn-primary" href="/mice/#quote">Request an event proposal</a><a class="btn btn-ghost-light" href="/mice/services/">See our services</a></div></div>""",
-                'Why choose Moldova for your next event: versatile venues, wine and gastronomy, culture and one local DMC partner for everything.', form=False, biz=True,
-                note='Executive meetings, conferences, incentive trips, team building and corporate celebrations: since 2001 we coordinate the venue, hotels, transport, catering and the experiences around your agenda, as one local partner in Moldova.')
+                'Why choose Moldova for your next event: versatile venues, wine and gastronomy, culture and one local DMC partner for everything.', form=False, biz=True)
     services = '<ul class="gtk">' + ''.join(f'<li>{ic("f-route")}<div><b>{e(h)}</b>{e(x)}</div></li>' for h, x in MICE_SERVICES) + '</ul>'
     mice_layout('/mice/services/', 'Our services', 'MICE and conference packages: flexible, tailor-made, with professional on-site coordination.', '/img/cricova.jpg',
                 services + '<p class="tagline-dark mt">Flexible packages · Tailor-made solutions · Professional on-site coordination</p><h2 class="mt">Why work with us</h2>'
