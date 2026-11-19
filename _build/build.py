@@ -10,6 +10,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 DATA = lambda f: json.load(open(os.path.join(HERE, 'data', f), encoding='utf8'))
 SITE_TOURS = DATA('tours_site.json')
+import hashlib
+# cache-busting: the file's hash, so a new style.css / site.js reaches visitors at once
+ASSET_V = {f: hashlib.md5(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), f), 'rb').read()).hexdigest()[:8] for f in ('style.css', 'site.js')}
 SITE_PAGES = {p['slug']: p for p in DATA('pages.json')}
 POSTS = DATA('posts.json')
 from content_2026 import (WINERIES_2026, WINERIES_ON_REQUEST, AGENCY_PDF, TASTE5_DAYS, AGENCY_TOUR_TYPES, DAY_TOURS_2026, NEW_DAY_TOURS,
@@ -350,7 +353,7 @@ def layout(path, title, desc, body, schema=None, wa_msg='Hello! I’d like to pl
 <link rel="icon" href="/img/logo.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/style.css">{ld}
+<link rel="stylesheet" href="/style.css?v={ASSET_V['style.css']}">{ld}
 </head>
 <body>
 {SPRITE}
@@ -379,7 +382,7 @@ def layout(path, title, desc, body, schema=None, wa_msg='Hello! I’d like to pl
 </div></footer>
 {f'<a class="wa-float js-wa" href="#" data-msg="{e(wa_msg)}" aria-label="Chat on WhatsApp">{WA_SVG}</a>' if whatsapp else ''}
 <div class="mobile-bar{'' if whatsapp else ' solo'}">{wa(wa_msg, 'WhatsApp') if whatsapp else ''}<a class="btn btn-primary" href="{mobile_cta[1]}">{mobile_cta[0]}</a></div>
-<script>window.WA="{SITE['whatsapp']}"</script><script src="/site.js"></script>
+<script>window.WA="{SITE['whatsapp']}"</script><script src="/site.js?v={ASSET_V['site.js']}"></script>
 </body></html>'''
     write(path, page)
 
@@ -1453,7 +1456,11 @@ def mice_pages():
 <div class="ws-more"><h3>{e(dt)}</h3><ul class="{"ws-list cols" if max(len(i) for i in items) < 60 else "ws-list"}">{"".join(f"<li>{e(i)}</li>" for i in items)}</ul><a class="ws-link" href="{lk[1]}">{e(lk[0])} →</a></div></div></div>""" for n, (((_, h, x), im), (dt, items, lk)) in enumerate(zip(why, MICE_WHY_DETAILS), 1))
     formats = ''.join(f'<li>{e(x)}</li>' for x in ('Executive meetings', 'Conferences', 'Incentive trips', 'Team building', 'Corporate celebrations'))
     mice_layout('/mice/why-moldova/', 'Why choose Moldova for your next event?', 'A distinctive destination. Meaningful connections. Memorable experiences.', '/img/unsplash/meeting-room.jpg',
-                f"""<div class="why-switch reveal js-switch"><div class="ws-tabs" role="tablist" aria-label="Six reasons to choose Moldova">{tabs}</div><div class="ws-panels">{panels}</div></div>
+                f"""<section class="why-lead reveal"><div class="wl-text"><h2>Business events in Moldova, organised by a local DMC</h2>
+<p>Moldova is a welcoming destination for conferences, executive meetings, incentive trips, team building and corporate celebrations. Business sessions in modern conference hotels in central Chișinău can be combined with wine cellars, traditional cuisine and cultural visits that bring participants together beyond the meeting room.</p>
+<p>Enjoy Moldova by Solei Tourism has organised travel, business trips and events in Moldova since 2001. We select and book the venue and hotels, arrange transfers, catering, audio-visual equipment, interpreters and the social programme, so your team works with one local point of contact from the first request to the last transfer.</p></div>
+<ul class="wl-facts"><li><b>2001</b><span>local DMC since</span></li><li><b>5</b><span>conference hotels in Chișinău</span></li><li><b>1,200 m²</b><span>largest convention center</span></li><li><b>7</b><span>partner wineries</span></li><li><b>10</b><span>MICE services from one partner</span></li></ul></section>
+<div class="why-switch reveal js-switch"><div class="ws-tabs" role="tablist" aria-label="Six reasons to choose Moldova">{tabs}</div><div class="ws-panels">{panels}</div></div>
 <div class="why-band reveal"><p>Make business happen.<br>Make Moldova memorable.</p><div class="ctas"><a class="btn btn-primary" href="/mice/#quote">Request an event proposal</a><a class="btn btn-ghost-light" href="/mice/services/">See our services</a></div></div>""",
                 'Why choose Moldova for your next event: versatile venues, wine and gastronomy, culture and one local DMC partner for everything.', form=False, biz=True,
                 note='Executive meetings, conferences, incentive trips, team building and corporate celebrations: since 2001 we coordinate the venue, hotels, transport, catering and the experiences around your agenda, as one local partner in Moldova.')
