@@ -294,3 +294,41 @@ $$('.route-all').forEach(btn => btn.addEventListener('click', () => {
 // destinations: a link like /destinations/#wineries opens that type
 const openType = () => { const d = location.hash && document.getElementById(location.hash.slice(1)); if (d && d.matches('details.dest-type')) { d.open = true; d.scrollIntoView(); } };
 window.addEventListener('hashchange', openType); openType();
+
+// MICE "Why Moldova": tabs + auto-advance on desktop, swipe + dots on phones
+$$('.js-switch').forEach(box => {
+  const tabs = $$('.ws-tab', box), panels = $$('.ws-panel', box), track = $('.ws-panels', box);
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches, wide = matchMedia('(min-width: 981px)');
+  let cur = 0, timer = null;
+  const show = (i, focus) => {
+    cur = (i + tabs.length) % tabs.length;
+    tabs.forEach((t, k) => { t.setAttribute('aria-selected', k === cur); t.tabIndex = k === cur ? 0 : -1; });
+    panels.forEach((p, k) => p.classList.toggle('on', k === cur));
+    if (focus) tabs[cur].focus();
+    if (auto()) { box.classList.remove('auto'); void box.offsetWidth; box.classList.add('auto'); }
+  };
+  const auto = () => !still && wide.matches;
+  const start = () => { clearInterval(timer); if (auto()) { box.classList.add('auto'); timer = setInterval(() => { if (!box.classList.contains('paused')) show(cur + 1); }, 6000); } };
+  tabs.forEach((t, k) => { t.addEventListener('click', () => { show(k); start(); }); t.addEventListener('mouseenter', () => show(k)); });
+  $('.ws-tabs', box).addEventListener('keydown', ev => { const d = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[ev.key]; if (d) { ev.preventDefault(); show(cur + d, true); } });
+  ['mouseenter', 'focusin'].forEach(n => box.addEventListener(n, () => box.classList.add('paused')));
+  ['mouseleave', 'focusout'].forEach(n => box.addEventListener(n, () => box.classList.remove('paused')));
+  // phone: dots under the swipe track
+  const dots = document.createElement('div'); dots.className = 'ws-dots';
+  panels.forEach((p, k) => { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', `Reason ${k + 1}`); b.addEventListener('click', () => p.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'nearest', inline: 'center' })); dots.append(b); });
+  box.append(dots);
+  const mark = () => { const k = Math.round(track.scrollLeft / (panels[0].offsetWidth + 12)); $$('button', dots).forEach((b, n) => b.toggleAttribute('aria-current', n === k)); };
+  track.addEventListener('scroll', mark, { passive: true });
+  box.classList.add('ready'); show(0); start(); mark();
+  wide.addEventListener('change', start);
+});
+
+// sections that ease in when they scroll into view
+document.documentElement.classList.add('js');
+const reveals = $$('.reveal');
+if (reveals.length) {
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } }), { threshold: .12 });
+    reveals.forEach(r => io.observe(r));
+  } else reveals.forEach(r => r.classList.add('in'));
+}
