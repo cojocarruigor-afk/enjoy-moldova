@@ -1447,20 +1447,18 @@ def mice_pages():
                 '/img/unsplash/mice-cover.jpg', f"""<div class="mice-about"><div class="prose">{intro}</div><p class="mice-quote">{e(MICE_PHILOSOPHY)}</p></div>
 <h2 class="mice-h mt">What we organise</h2><div class="mice-grid">{cards}</div>""",
                 'MICE and business travel in Moldova: conference venues, hotels, transport, catering and sport travel, organised by Enjoy Moldova by Solei Tourism, a DMC since 2001.')
-    why_img = ['/img/hero-river.jpg', '/img/unsplash/banquet-hall.jpg', '/img/wine-tasting-table.jpg', '/img/orheiul-vechi.jpg', '/img/unsplash/team-golden-hour.jpg', '/img/unsplash/event-room-setup.jpg']
-    why = list(zip(MICE_WHY_MOLDOVA, why_img))
-    tabs = ''.join(f'<button class="ws-tab" role="tab" id="ws-t{n}" aria-controls="ws-p{n}" aria-selected="{"true" if n == 1 else "false"}" tabindex="{0 if n == 1 else -1}"><span class="ws-n">{n:02d}</span><span>{e(h)}</span><i class="ws-bar"></i></button>'
-                   for n, ((_, h, x), im) in enumerate(why, 1))
-    panels = ''.join(f"""<div class="ws-panel" role="tabpanel" id="ws-p{n}" aria-labelledby="ws-t{n}"><div class="ws-ph">{pic(im, h, sizes='(max-width: 980px) 90vw, 680px', eager=n == 1)}</div>
-<div class="ws-tx"><span class="ws-n">{n:02d} / {len(why):02d}</span><h2>{e(h)}</h2><p>{e(x)}</p>
-<div class="ws-more"><h3>{e(dt)}</h3><ul class="{"ws-list cols" if max(len(i) for i in items) < 60 else "ws-list"}">{"".join(f"<li>{e(i)}</li>" for i in items)}</ul><a class="ws-link" href="{lk[1]}">{e(lk[0])} →</a></div></div></div>""" for n, (((_, h, x), im), (dt, items, lk)) in enumerate(zip(why, MICE_WHY_DETAILS), 1))
-    formats = ''.join(f'<li>{e(x)}</li>' for x in ('Executive meetings', 'Conferences', 'Incentive trips', 'Team building', 'Corporate celebrations'))
+    why_img = [None, '/img/unsplash/banquet-hall.jpg', '/img/wine-tasting-table.jpg', '/img/orheiul-vechi.jpg', None, None]
+    secs = ''.join(f"""<section class="why-sec reveal" aria-labelledby="why{n}"><div class="ws-head"><span class="why-num">{n:02d}</span><h2 id="why{n}">{e(h)}</h2></div>
+<div class="ws-body">{f'<div class="why-pic">{pic(im, h, sizes="(max-width: 980px) 92vw, 760px")}</div>' if im else ''}<p class="why-text">{e(x)}</p>
+<h3>{e(dt)}</h3><ul class="why-list{" two" if max(len(i) for i in items) < 60 else ""}">{"".join(f"<li>{e(i)}</li>" for i in items)}</ul>
+<a class="why-link" href="{lk[1]}">{e(lk[0])} <span aria-hidden="true">→</span></a></div></section>"""
+                   for n, ((_, h, x), im, (dt, items, lk)) in enumerate(zip(MICE_WHY_MOLDOVA, why_img, MICE_WHY_DETAILS), 1))
+    facts = ''.join(f'<li><b>{a}</b><span>{e(t)}</span></li>' for a, t in (('2001', 'local DMC since'), ('5', 'conference hotels in Chișinău'), ('1,200 m²', 'largest convention center'), ('7', 'partner wineries')))
     mice_layout('/mice/why-moldova/', 'Why choose Moldova for your next event?', 'A distinctive destination. Meaningful connections. Memorable experiences.', '/img/unsplash/meeting-room.jpg',
-                f"""<section class="why-lead reveal"><div class="wl-text"><h2>Business events in Moldova, organised by a local DMC</h2>
-<p>Moldova is a welcoming destination for conferences, executive meetings, incentive trips, team building and corporate celebrations. Business sessions in modern conference hotels in central Chișinău can be combined with wine cellars, traditional cuisine and cultural visits that bring participants together beyond the meeting room.</p>
-<p>Enjoy Moldova by Solei Tourism has organised travel, business trips and events in Moldova since 2001. We select and book the venue and hotels, arrange transfers, catering, audio-visual equipment, interpreters and the social programme, so your team works with one local point of contact from the first request to the last transfer.</p></div>
-<ul class="wl-facts"><li><b>2001</b><span>local DMC since</span></li><li><b>5</b><span>conference hotels in Chișinău</span></li><li><b>1,200 m²</b><span>largest convention center</span></li><li><b>7</b><span>partner wineries</span></li><li><b>10</b><span>MICE services from one partner</span></li></ul></section>
-<div class="why-switch reveal js-switch"><div class="ws-tabs" role="tablist" aria-label="Six reasons to choose Moldova">{tabs}</div><div class="ws-panels">{panels}</div></div>
+                f"""<div class="why-open reveal"><p class="why-statement">One local partner for your meetings, venues, wine and culture in Moldova.</p>
+<p class="why-text">Conferences, executive meetings, incentive trips, team building and corporate celebrations: since 2001 Enjoy Moldova by Solei Tourism selects the venue, books the hotels and arranges transfers, catering, audio-visual equipment, interpreters and the social programme, with one point of contact from the first request to the last transfer.</p>
+<ul class="why-facts">{facts}</ul></div>
+<div class="why-secs">{secs}</div>
 <div class="why-band reveal"><p>Make business happen.<br>Make Moldova memorable.</p><div class="ctas"><a class="btn btn-primary" href="/mice/#quote">Request an event proposal</a><a class="btn btn-ghost-light" href="/mice/services/">See our services</a></div></div>""",
                 'Why choose Moldova for your next event: versatile venues, wine and gastronomy, culture and one local DMC partner for everything.', form=False, biz=True)
     services = '<ul class="gtk">' + ''.join(f'<li>{ic("f-route")}<div><b>{e(h)}</b>{e(x)}</div></li>' for h, x in MICE_SERVICES) + '</ul>'
