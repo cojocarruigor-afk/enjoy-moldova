@@ -1371,7 +1371,7 @@ def about_us():
 <div><b>2001</b><span>founded in Chișinău</span></div><div><b>Since 2009</b><span>travel for football teams: 23 national associations and 28 clubs</span></div>
 <div><b>13</b><span>partner wineries for tastings</span></div><div><b>FIT &amp; groups</b><span>individual travellers and groups, tours and MICE</span></div></div></div></section>
 <section class="section"><div class="wrap">{crumbs(('About us', None))}
-<div class="about-intro prose"><h2>Your local DMC since 2001</h2>
+<div class="about-intro prose"><h2>Your founded, local DMC 2001</h2>
 <p class="lead">We started in Chișinău in 2001 as Solei-Turism and grew into one of the leading inbound travel companies in Moldova. We have been awarded Best Inbound Travel Agency in the Republic of Moldova more than once, most recently first place in inbound tourism at the Moldova Tourism Awards 2024.</p>
 <p>We plan the logistics and every detail of your trip, so you can simply enjoy it. We design each tour around you and match you with the best places, people and experiences. Our guides help you understand local life, not just see the sights.</p>
 <p>Our philosophy is simple: quality, satisfaction, integrity and efficiency. Since 2009 we have also arranged travel and logistics for football teams and sport delegations.</p>
@@ -1402,13 +1402,31 @@ def event_form():
 MICE_PAGES = [('/mice/why-moldova/', 'Why choose Moldova?'), ('/mice/services/', 'Our services'), ('/mice/hotels-venues/', 'Hotels & venues'), ('/mice/sport-travel/', 'Sport travel')]
 
 
+MICE_CARD_INTRO = {
+    '/mice/why-moldova/': 'Compact capital, wine cellars as venues, short transfers and great value for groups.',
+    '/mice/services/': 'Venues, AV, hotels, catering, transfers, registration and interpreters from one partner.',
+    '/mice/hotels-venues/': 'Five conference hotels in central Chișinău, meeting rooms for up to 1,200 m².',
+    '/mice/sport-travel/': f'Team logistics for national associations and clubs since {SPORT_SINCE}.',
+}
+
+
+def mice_hero(title, intro, img):
+    stats = (('2001', 'founded, local DMC'), ('5', 'conference hotels'), (str(len(SPORT_ASSOCIATIONS)), 'national football associations'), ('2024', 'Best Inbound Travel Agency'))
+    st = ''.join(f'<div><b>{a}</b><span>{e(b)}</span></div>' for a, b in stats)
+    return f'''<section class="phero mice-hero" style="--hero:url({rsrc(img, 1600)});--hero-sm:url({rsrc(img, 960)})"><div class="wrap">
+<p class="eyebrow light">MICE &amp; Business Travel</p><h1>{e(title)}</h1><p class="mh-lead">{e(intro)}</p>
+<div class="ctas"><a class="btn btn-primary" href="#quote">Request an event proposal</a><a class="btn btn-ghost-light" href="tel:{SITE["phone"].replace(" ", "")}">Call {SITE["phone"]}</a></div>
+<div class="mice-stats">{st}</div></div>{credit(img)}</section>'''
+
+
 def mice_layout(path, title, intro, img, inner, desc, form=True):
-    side = ''.join(f'<a class="{"on" if u == path else ""}" href="{u}">{e(n)}</a>' for u, n in [('/mice/', 'Overview')] + MICE_PAGES)
+    tabs = '' if path == '/mice/' else '<nav class="mice-tabs" aria-label="MICE pages">' + ''.join(
+        f'<a{" aria-current=\"page\"" if u == path else ""} href="{u}">{e(n)}</a>' for u, n in [('/mice/', 'Overview')] + MICE_PAGES) + '</nav>'
     trail = (('MICE & Business Travel', '/mice/'), (title, None)) if path != '/mice/' else (('MICE & Business Travel', None),)
-    body = page_hero('MICE & Business Travel', title, intro, img) + f"""
-<section class="section"><div class="wrap">{crumbs(*trail)}
-<div class="side-layout"><aside class="side"><h4>MICE &amp; Business Travel</h4>{side}</aside>
-<article class="mice-body">{inner}</article></div>
+    hero = mice_hero(title, intro, img) if path == '/mice/' else page_hero('MICE & Business Travel', title, intro, img)
+    body = hero + f"""
+<section class="section"><div class="wrap">{crumbs(*trail)}{tabs}
+<article class="mice-body">{inner}</article>
 {f'<div class="contact-layout mt" id="quote"><div class="prose"><h2>Plan your event with us</h2><p>Tell us the type of event, the dates and the number of participants. We reply with suitable venues and a proposal for accommodation, transport, catering and activities.</p><p>Or call {SITE["phone"]} · <a href="mailto:{SITE["email"]}">{SITE["email"]}</a></p></div><div class="form-card">{event_form()}</div></div>' if form else ''}
 </div></section>"""
     layout(path, f'{title} | Enjoy Moldova DMC', desc, body, [ORG_LD, crumbs_ld(*[(n, u or path) for n, u in trail])])
@@ -1420,10 +1438,11 @@ def rows_html(items, icon='f-romb'):
 
 def mice_pages():
     imgs = {'/mice/why-moldova/': '/img/wine-tasting-table.jpg', '/mice/services/': '/img/cricova.jpg', '/mice/hotels-venues/': '/img/commons/radisson-blu-leogrand.jpg', '/mice/sport-travel/': '/img/commons/zimbru-stadium.jpg'}
-    cards = ''.join(f'<a class="card guide-card" href="{u}"><div class="ph">{pic(imgs[u], n, sizes="(max-width: 640px) 90vw, 560px")}</div><div class="body"><h3>{e(n)}</h3><div class="foot"><span class="more">Read →</span></div></div></a>' for u, n in MICE_PAGES)
+    cards = ''.join(f'<a class="mice-card" href="{u}"><div class="ph">{pic(imgs[u], n, sizes="(max-width: 640px) 90vw, 300px")}</div><div class="mc-body"><h3>{e(n)}</h3><p>{e(MICE_CARD_INTRO[u])}</p><span class="mc-go">Explore <span aria-hidden="true">→</span></span></div></a>' for u, n in MICE_PAGES)
     intro = ''.join(f'<p>{e(x)}</p>' for x in MICE_INTRO)
-    mice_layout('/mice/', 'Your trusted local DMC partner in Moldova', 'Conferences, seminars, corporate meetings, incentive trips and sport travel, organised by a local DMC since 2001.',
-                '/img/cricova.jpg', f"""<div class="prose">{intro}<p class="tagline-dark">{e(MICE_PHILOSOPHY)}</p></div><div class="grid g2 mt">{cards}</div>""",
+    mice_layout('/mice/', 'Your trusted local DMC partner in Moldova', 'Conferences, seminars, corporate meetings, incentive trips and sport travel, organised end to end by one local team.',
+                '/img/unsplash/conference-audience.jpg', f"""<h2 class="mice-h">What we organise</h2><div class="mice-grid">{cards}</div>
+<div class="mice-about mt"><div class="prose">{intro}</div><p class="mice-quote">{e(MICE_PHILOSOPHY)}</p></div>""",
                 'MICE and business travel in Moldova: conference venues, hotels, transport, catering and sport travel, organised by Enjoy Moldova by Solei Tourism, a DMC since 2001.')
     mice_layout('/mice/why-moldova/', 'Why choose Moldova?', 'A distinctive destination. Meaningful connections. Memorable experiences.', '/img/wine-tasting-table.jpg',
                 rows_html(MICE_WHY_MOLDOVA) + '<p class="tagline-dark mt">Make business happen. Make Moldova memorable.</p>',
