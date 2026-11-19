@@ -855,6 +855,8 @@ details.fold[open]>summary{padding-bottom:var(--s2)}
 .ws-link{display:inline-block;margin-top:var(--s3);font-weight:600;font-size:var(--fs-sm);color:var(--wine);text-decoration:none;padding:4px 0}.ws-link:hover{text-decoration:underline}
 .photo-credits{margin-top:var(--s5);font-size:11px;color:var(--muted)}.photo-credits a{color:inherit}
 .js .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}.js .reveal.in{opacity:1;transform:none}
+.mh-intro{max-width:620px;font-size:var(--fs-md);line-height:1.6;color:var(--on-dark-muted);margin-top:var(--s2)}
+.biz .mh-lead{font-weight:600}
 .mh-call{color:var(--on-dark);font-weight:600;align-self:center;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.5)}
 .biz .mice-hero{min-height:min(60vh,540px);padding:120px 0 40px}
 .why-band{margin-top:var(--s8);background:var(--ink-d);color:var(--on-dark);border-radius:var(--r);padding:var(--s7);display:flex;flex-wrap:wrap;gap:var(--s5);align-items:center;justify-content:space-between}
