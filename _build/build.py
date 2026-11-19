@@ -1410,20 +1410,20 @@ MICE_CARD_INTRO = {
 }
 
 
-def mice_hero(title, intro, img, stats=True, cta='#quote', show_credit=True):
+def mice_hero(title, intro, img, stats=True, cta='#quote', show_credit=True, note=''):
     facts = (('2001', 'founded, local DMC'), ('5', 'conference hotels'), (str(len(SPORT_ASSOCIATIONS)), 'national football associations'), ('2024', 'Best Inbound Travel Agency'))
     st = ''.join(f'<div><b>{a}</b><span>{e(b)}</span></div>' for a, b in facts)
     return f'''<section class="phero mice-hero" style="--hero:url({rsrc(img, 1600)});--hero-sm:url({rsrc(img, 960)})"><div class="wrap">
-<p class="eyebrow light">MICE &amp; Business Travel</p><h1>{e(title)}</h1><p class="mh-lead">{e(intro)}</p>
+<p class="eyebrow light">MICE &amp; Business Travel</p><h1>{e(title)}</h1><p class="mh-lead">{e(intro)}</p>{f'<p class="mh-intro">{e(note)}</p>' if note else ''}
 <div class="ctas"><a class="btn btn-primary" href="{cta}">Request an event proposal</a><a class="{"btn btn-ghost-light" if stats else "mh-call"}" href="tel:{SITE["phone"].replace(" ", "")}">Call {SITE["phone"]}</a></div>
 {f'<div class="mice-stats">{st}</div>' if stats else ''}</div>{credit(img) if show_credit else ''}</section>'''
 
 
-def mice_layout(path, title, intro, img, inner, desc, form=True, biz=False):
-    tabs = '' if path == '/mice/' else '<nav class="mice-tabs" aria-label="MICE pages">' + ''.join(
+def mice_layout(path, title, intro, img, inner, desc, form=True, biz=False, note=''):
+    tabs = '' if path == '/mice/' or biz else '<nav class="mice-tabs" aria-label="MICE pages">' + ''.join(
         f'<a{" aria-current=\"page\"" if u == path else ""} href="{u}">{e(n)}</a>' for u, n in [('/mice/', 'Overview')] + MICE_PAGES) + '</nav>'
     trail = (('MICE & Business Travel', '/mice/'), (title, None)) if path != '/mice/' else (('MICE & Business Travel', None),)
-    hero = mice_hero(title, intro, img) if path == '/mice/' else mice_hero(title, intro, img, stats=False, cta='/mice/#quote', show_credit=False) if biz else page_hero('MICE & Business Travel', title, intro, img)
+    hero = mice_hero(title, intro, img) if path == '/mice/' else mice_hero(title, intro, img, stats=False, cta='/mice/#quote', show_credit=False, note=note) if biz else page_hero('MICE & Business Travel', title, intro, img)
     body = ('<div class="biz">' if biz else '') + hero + f"""
 <section class="section"><div class="wrap">{crumbs(*trail)}{tabs}
 <article class="mice-body">{inner}</article>
@@ -1444,7 +1444,7 @@ def mice_pages():
                 '/img/unsplash/mice-cover.jpg', f"""<div class="mice-about"><div class="prose">{intro}</div><p class="mice-quote">{e(MICE_PHILOSOPHY)}</p></div>
 <h2 class="mice-h mt">What we organise</h2><div class="mice-grid">{cards}</div>""",
                 'MICE and business travel in Moldova: conference venues, hotels, transport, catering and sport travel, organised by Enjoy Moldova by Solei Tourism, a DMC since 2001.')
-    why_img = ['/img/hero-river.jpg', '/img/commons/radisson-blu-leogrand.jpg', '/img/wine-tasting-table.jpg', '/img/orheiul-vechi.jpg', '/img/unsplash/team-golden-hour.jpg', '/img/unsplash/event-room-setup.jpg']
+    why_img = ['/img/hero-river.jpg', '/img/unsplash/banquet-hall.jpg', '/img/wine-tasting-table.jpg', '/img/orheiul-vechi.jpg', '/img/unsplash/team-golden-hour.jpg', '/img/unsplash/event-room-setup.jpg']
     why = list(zip(MICE_WHY_MOLDOVA, why_img))
     tabs = ''.join(f'<button class="ws-tab" role="tab" id="ws-t{n}" aria-controls="ws-p{n}" aria-selected="{"true" if n == 1 else "false"}" tabindex="{0 if n == 1 else -1}"><span class="ws-n">{n:02d}</span><span>{e(h)}</span><i class="ws-bar"></i></button>'
                    for n, ((_, h, x), im) in enumerate(why, 1))
@@ -1452,18 +1452,11 @@ def mice_pages():
 <div class="ws-tx"><span class="ws-n">{n:02d} / {len(why):02d}</span><h2>{e(h)}</h2><p>{e(x)}</p>
 <div class="ws-more"><h3>{e(dt)}</h3><ul class="{"ws-list cols" if max(len(i) for i in items) < 60 else "ws-list"}">{"".join(f"<li>{e(i)}</li>" for i in items)}</ul><a class="ws-link" href="{lk[1]}">{e(lk[0])} →</a></div></div></div>""" for n, (((_, h, x), im), (dt, items, lk)) in enumerate(zip(why, MICE_WHY_DETAILS), 1))
     formats = ''.join(f'<li>{e(x)}</li>' for x in ('Executive meetings', 'Conferences', 'Incentive trips', 'Team building', 'Corporate celebrations'))
-    names = {}
-    for im in ['/img/unsplash/meeting-room.jpg'] + why_img:
-        c = PHOTO_CREDITS.get(im)
-        if c: names.setdefault(c[1], []).append(f'<a href="{c[2]}" rel="noopener" target="_blank">{e(c[0])}</a>')
-    credits = '<p class="photo-credits">Photos: ' + ' · '.join(f'{", ".join(v)} ({e(k)})' for k, v in names.items()) + '</p>'
-    mice_layout('/mice/why-moldova/', 'Why choose Moldova for your next event?', 'Conferences, executive meetings, incentive trips and corporate celebrations in Moldova, with one local DMC partner.', '/img/unsplash/meeting-room.jpg',
-                f"""<div class="why-intro reveal"><p class="lead">A distinctive destination. Meaningful connections. Memorable experiences.</p>
-<ul class="why-formats" aria-label="Event formats">{formats}</ul></div>
-<div class="why-switch reveal js-switch"><div class="ws-tabs" role="tablist" aria-label="Six reasons to choose Moldova">{tabs}</div><div class="ws-panels">{panels}</div></div>
-<div class="why-band reveal"><p>Make business happen.<br>Make Moldova memorable.</p><div class="ctas"><a class="btn btn-primary" href="/mice/#quote">Request an event proposal</a><a class="btn btn-ghost-light" href="/mice/services/">See our services</a></div></div>
-{credits}""",
-                'Why choose Moldova for your next event: versatile venues, wine and gastronomy, culture and one local DMC partner for everything.', form=False, biz=True)
+    mice_layout('/mice/why-moldova/', 'Why choose Moldova for your next event?', 'A distinctive destination. Meaningful connections. Memorable experiences.', '/img/unsplash/meeting-room.jpg',
+                f"""<div class="why-switch reveal js-switch"><div class="ws-tabs" role="tablist" aria-label="Six reasons to choose Moldova">{tabs}</div><div class="ws-panels">{panels}</div></div>
+<div class="why-band reveal"><p>Make business happen.<br>Make Moldova memorable.</p><div class="ctas"><a class="btn btn-primary" href="/mice/#quote">Request an event proposal</a><a class="btn btn-ghost-light" href="/mice/services/">See our services</a></div></div>""",
+                'Why choose Moldova for your next event: versatile venues, wine and gastronomy, culture and one local DMC partner for everything.', form=False, biz=True,
+                note='Executive meetings, conferences, incentive trips, team building and corporate celebrations: since 2001 we coordinate the venue, hotels, transport, catering and the experiences around your agenda, as one local partner in Moldova.')
     services = '<ul class="gtk">' + ''.join(f'<li>{ic("f-route")}<div><b>{e(h)}</b>{e(x)}</div></li>' for h, x in MICE_SERVICES) + '</ul>'
     mice_layout('/mice/services/', 'Our services', 'MICE and conference packages: flexible, tailor-made, with professional on-site coordination.', '/img/cricova.jpg',
                 services + '<p class="tagline-dark mt">Flexible packages · Tailor-made solutions · Professional on-site coordination</p><h2 class="mt">Why work with us</h2>'
