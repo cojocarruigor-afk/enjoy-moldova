@@ -1441,8 +1441,8 @@ def mice_pages():
     cards = ''.join(f'<a class="mice-card" href="{u}"><div class="ph">{pic(imgs[u], n, sizes="(max-width: 640px) 90vw, 300px")}</div><div class="mc-body"><h3>{e(n)}</h3><p>{e(MICE_CARD_INTRO[u])}</p><span class="mc-go">Explore <span aria-hidden="true">→</span></span></div></a>' for u, n in MICE_PAGES)
     intro = ''.join(f'<p>{e(x)}</p>' for x in MICE_INTRO)
     mice_layout('/mice/', 'Your trusted local DMC partner in Moldova', 'Conferences, seminars, corporate meetings, incentive trips and sport travel, organised end to end by one local team.',
-                '/img/unsplash/conference-audience.jpg', f"""<h2 class="mice-h">What we organise</h2><div class="mice-grid">{cards}</div>
-<div class="mice-about mt"><div class="prose">{intro}</div><p class="mice-quote">{e(MICE_PHILOSOPHY)}</p></div>""",
+                '/img/unsplash/conference-audience.jpg', f"""<div class="mice-about"><div class="prose">{intro}</div><p class="mice-quote">{e(MICE_PHILOSOPHY)}</p></div>
+<h2 class="mice-h mt">What we organise</h2><div class="mice-grid">{cards}</div>""",
                 'MICE and business travel in Moldova: conference venues, hotels, transport, catering and sport travel, organised by Enjoy Moldova by Solei Tourism, a DMC since 2001.')
     mice_layout('/mice/why-moldova/', 'Why choose Moldova?', 'A distinctive destination. Meaningful connections. Memorable experiences.', '/img/wine-tasting-table.jpg',
                 rows_html(MICE_WHY_MOLDOVA) + '<p class="tagline-dark mt">Make business happen. Make Moldova memorable.</p>',
