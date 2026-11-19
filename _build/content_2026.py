@@ -92,13 +92,13 @@ MICE_INTRO = [
     'Our company has been awarded Best Inbound Travel Agency in the Republic of Moldova, most recently at the Moldova Tourism Awards 2024.',
 ]
 MICE_PHILOSOPHY = 'Quality. Integrity. Efficiency. Client Satisfaction.'
-MICE_WHY_MOLDOVA = [
-    ('f-star', 'A different kind of business destination', 'A welcoming destination where meetings and corporate events can be combined with authentic cultural and gastronomic experiences.'),
-    ('f-tower', 'Versatile event venues', 'From modern conference hotels and meeting facilities to atmospheric wineries and countryside locations, for many event formats.'),
-    ('f-glass', 'Wine, gastronomy & authentic experiences', 'Winery visits, guided tastings, traditional cuisine, food-and-wine pairings and meetings with local producers.'),
-    ('f-bird', 'Business meets culture', 'Cultural discoveries and local traditions that bring people together beyond the meeting room.'),
-    ('f-tree', 'Tailor-made group experiences', 'Executive meetings, conferences, incentive trips, team building or corporate celebrations, tailored to your group’s interests and objectives.'),
-    ('f-romb', 'Local expertise, one coordinated solution', 'Venues, accommodation, transport, catering and activities coordinated by one local DMC partner.'),
+MICE_WHY_MOLDOVA = [  # full client text, MICE presentation (Drive, 11.11.2026)
+    ('f-star', 'A different kind of business destination', 'Discover a welcoming destination where business meetings and corporate events can be combined with authentic cultural and gastronomic experiences.'),
+    ('f-tower', 'Versatile event venues', 'From modern conference hotels and professional meeting facilities to atmospheric wineries and unique countryside locations, Moldova offers a variety of settings for different event formats.'),
+    ('f-glass', 'Wine, gastronomy & authentic experiences', 'Enrich your program with winery visits, guided wine tastings, traditional cuisine, food-and-wine pairings and memorable encounters with local producers.'),
+    ('f-bird', 'Business meets culture', 'Complement your business agenda with cultural discoveries, local traditions and experiences that bring people together beyond the meeting room.'),
+    ('f-tree', 'Tailor-made group experiences', 'Whether you are planning an executive meeting, conference, incentive trip, team-building activity or corporate celebration, your program can be tailored to your group’s interests and objectives.'),
+    ('f-romb', 'Local expertise, one coordinated solution', 'With Enjoy Moldova by Solei Tourism as your local DMC partner, venues, accommodation, transportation, catering and additional activities can be coordinated according to your requirements.'),
 ]
 MICE_SERVICES = [
     ('Conference venues & meeting facilities', 'Selection and booking of conference venues, meeting rooms and event spaces.'),
