@@ -85,11 +85,12 @@ NEW_DAY_TOURS = [  # tours that are not on the site yet (images reused until the
 ]
 
 # ---- MICE & Business Travel (MICE presentation)
-MICE_INTRO = [
+MICE_INTRO = [  # full client text (MICE presentation); the award line keeps the 2024 detail from the company profile
     'Founded in 2001, Solei Tourism is an established travel company operating under the brand Enjoy Moldova by Solei Tourism, providing destination management services in the Republic of Moldova.',
-    'With over two decades of experience in tourism, business travel and MICE, we offer tailored solutions for international tour operators, corporate clients, event agencies and individual travellers.',
-    'Over the years we have built strong relationships with airlines, hotels, transport providers, travel companies and international industry associations, so we can coordinate every service of your event in Moldova.',
-    'Our company has been awarded Best Inbound Travel Agency in the Republic of Moldova, most recently at the Moldova Tourism Awards 2024.',
+    'With over two decades of experience in tourism, business travel and MICE, we offer tailored travel solutions for international tour operators, corporate clients, event agencies and individual travelers.',
+    'Over the years, we have built strong professional relationships with airlines, hotels, transport providers, travel companies and international industry associations, enabling us to deliver coordinated services and personalized experiences throughout Moldova.',
+    'Our experienced team combines local expertise, professional service and attention to detail to ensure that every journey, business trip and event is organized with care and efficiency.',
+    'Our company has received awards recognizing its work in inbound tourism, including Best Inbound Travel Agency in the Republic of Moldova, most recently at the Moldova Tourism Awards 2024.',
 ]
 MICE_PHILOSOPHY = 'Quality. Integrity. Efficiency. Client Satisfaction.'
 MICE_WHY_MOLDOVA = [  # full client text, MICE presentation (Drive, 11.11.2026)

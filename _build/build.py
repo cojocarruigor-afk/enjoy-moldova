@@ -15,6 +15,8 @@ import hashlib
 ASSET_V = {f: hashlib.md5(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), f), 'rb').read()).hexdigest()[:8] for f in ('style.css', 'site.js')}
 SITE_PAGES = {p['slug']: p for p in DATA('pages.json')}
 POSTS = DATA('posts.json')
+from content_mice import (SERVICES, SERVICES_TAGLINE, WHY_US, WHY_US_CLOSING, HOTELS, SPORT_LEAD, SPORT_WHO, SPORT_TEAMS_INTRO, SPORT_SECTIONS, SPORT_WHY_SUB, SPORT_CLOSING)
+from content_mice import SPORT_SERVED as SPORT_SERVED_FULL, SPORT_WHY as SPORT_WHY_FULL
 from content_2026 import (WINERIES_2026, WINERIES_ON_REQUEST, AGENCY_PDF, TASTE5_DAYS, AGENCY_TOUR_TYPES, DAY_TOURS_2026, NEW_DAY_TOURS,
                           MICE_INTRO, MICE_PHILOSOPHY, MICE_WHY_MOLDOVA, MICE_WHY_DETAILS, MICE_SERVICES, MICE_WHY_US, MICE_HOTELS, SPORT_SINCE, SPORT_ASSOCIATIONS,
                           SPORT_CLUBS, SPORT_SERVED, SPORT_SERVICES, SPORT_CATERING, SPORT_TRANSPORT, SPORT_TRAINING, SPORT_COORDINATION, SPORT_TIRASPOL, SPORT_WHY, PROGRAMME_DAYS, PROGRAMME_FACTS,
@@ -378,7 +380,7 @@ def layout(path, title, desc, body, schema=None, wa_msg='Hello! I’d like to pl
 <div><h4>Plan your trip</h4><ul>{plan_col}</ul></div>
 <div><h4>Company</h4><ul><li><a href="/about-us/">About us</a></li><li><a href="/mice/">MICE &amp; Business Travel</a></li><li><a href="/travel-agencies/tour-samples/">For travel agencies</a></li><li><a href="/blog/">Blog</a></li><li><a href="/contact/">Contact</a></li></ul></div>
 </div>
-<div class="copy">© 2026 {SITE['legal']} · <a href="/terms/">Terms &amp; Conditions</a> · <a href="/privacy/">Privacy Policy</a> · <a href="/cancellation-policy/">Cancellation policy</a></div>
+<div class="copy">© 2026 {SITE['legal']} · <a href="/terms/">Terms &amp; Conditions</a> · <a href="/privacy/">Privacy Policy</a> · <a href="/cancellation-policy/">Cancellation policy</a> · <a href="/photo-credits/">Photo credits</a></div>
 </div></footer>
 {f'<a class="wa-float js-wa" href="#" data-msg="{e(wa_msg)}" aria-label="Chat on WhatsApp">{WA_SVG}</a>' if whatsapp else ''}
 <div class="mobile-bar{'' if whatsapp else ' solo'}">{wa(wa_msg, 'WhatsApp') if whatsapp else ''}<a class="btn btn-primary" href="{mobile_cta[1]}">{mobile_cta[0]}</a></div>
@@ -1406,7 +1408,7 @@ MICE_PAGES = [('/mice/why-moldova/', 'Why choose Moldova?'), ('/mice/services/',
 
 
 MICE_CARD_INTRO = {
-    '/mice/why-moldova/': 'Compact capital, wine cellars as venues, short transfers and great value for groups.',
+    '/mice/why-moldova/': 'A distinctive destination. Meaningful connections. Memorable experiences.',
     '/mice/services/': 'Venues, AV, hotels, catering, transfers, registration and interpreters from one partner.',
     '/mice/hotels-venues/': 'Five conference hotels in central Chișinău, meeting rooms for up to 1,200 m².',
     '/mice/sport-travel/': f'Team logistics for national associations and clubs since {SPORT_SINCE}.',
@@ -1417,7 +1419,7 @@ def mice_hero(title, intro, img, stats=True, cta='#quote', show_credit=True, not
     facts = (('2001', 'founded, local DMC'), ('5', 'conference hotels'), (str(len(SPORT_ASSOCIATIONS)), 'national football associations'), ('2024', 'Best Inbound Travel Agency'))
     st = ''.join(f'<div><b>{a}</b><span>{e(b)}</span></div>' for a, b in facts)
     return f'''<section class="phero mice-hero" style="--hero:url({rsrc(img, 1600)});--hero-sm:url({rsrc(img, 960)})"><div class="wrap">
-<p class="eyebrow light">MICE &amp; Business Travel</p><h1>{e(title)}</h1><p class="mh-lead">{e(intro)}</p>{f'<p class="mh-intro">{e(note)}</p>' if note else ''}
+{'<p class="eyebrow light">MICE &amp; Business Travel</p>' if stats else ''}<h1>{e(title)}</h1><p class="mh-lead">{e(intro)}</p>{f'<p class="mh-intro">{e(note)}</p>' if note else ''}
 <div class="ctas"><a class="btn btn-primary" href="{cta}">Request an event proposal</a><a class="{"btn btn-ghost-light" if stats else "mh-call"}" href="tel:{SITE["phone"].replace(" ", "")}">Call {SITE["phone"]}</a></div>
 {f'<div class="mice-stats">{st}</div>' if stats else ''}</div>{credit(img) if show_credit else ''}</section>'''
 
@@ -1447,56 +1449,110 @@ def mice_pages():
                 '/img/unsplash/mice-cover.jpg', f"""<div class="mice-about"><div class="prose">{intro}</div><p class="mice-quote">{e(MICE_PHILOSOPHY)}</p></div>
 <h2 class="mice-h mt">What we organise</h2><div class="mice-grid">{cards}</div>""",
                 'MICE and business travel in Moldova: conference venues, hotels, transport, catering and sport travel, organised by Enjoy Moldova by Solei Tourism, a DMC since 2001.')
-    why_img = [None, '/img/unsplash/banquet-hall.jpg', '/img/wine-tasting-table.jpg', '/img/orheiul-vechi.jpg', None, None]
-    secs = ''.join(f"""<section class="why-sec reveal" aria-labelledby="why{n}"><div class="ws-head"><span class="why-num">{n:02d}</span><h2 id="why{n}">{e(h)}</h2></div>
-<div class="ws-body">{f'<div class="why-pic">{pic(im, h, sizes="(max-width: 980px) 92vw, 760px")}</div>' if im else ''}<p class="why-text">{e(x)}</p>
-<h3>{e(dt)}</h3><ul class="why-list{" two" if max(len(i) for i in items) < 60 else ""}">{"".join(f"<li>{e(i)}</li>" for i in items)}</ul>
-<a class="why-link" href="{lk[1]}">{e(lk[0])} <span aria-hidden="true">→</span></a></div></section>"""
-                   for n, ((_, h, x), im, (dt, items, lk)) in enumerate(zip(MICE_WHY_MOLDOVA, why_img, MICE_WHY_DETAILS), 1))
-    facts = ''.join(f'<li><b>{a}</b><span>{e(t)}</span></li>' for a, t in (('2001', 'local DMC since'), ('5', 'conference hotels in Chișinău'), ('1,200 m²', 'largest convention center'), ('7', 'partner wineries')))
-    mice_layout('/mice/why-moldova/', 'Why choose Moldova for your next event?', 'A distinctive destination. Meaningful connections. Memorable experiences.', '/img/unsplash/meeting-room.jpg',
-                f"""<div class="why-open reveal"><p class="why-statement">One local partner for your meetings, venues, wine and culture in Moldova.</p>
-<p class="why-text">Conferences, executive meetings, incentive trips, team building and corporate celebrations: since 2001 Enjoy Moldova by Solei Tourism selects the venue, books the hotels and arranges transfers, catering, audio-visual equipment, interpreters and the social programme, with one point of contact from the first request to the last transfer.</p>
-<ul class="why-facts">{facts}</ul></div>
-<div class="why-secs">{secs}</div>
-<div class="why-band reveal"><p>Make business happen.<br>Make Moldova memorable.</p><div class="ctas"><a class="btn btn-primary" href="/mice/#quote">Request an event proposal</a><a class="btn btn-ghost-light" href="/mice/services/">See our services</a></div></div>""",
-                'Why choose Moldova for your next event: versatile venues, wine and gastronomy, culture and one local DMC partner for everything.', form=False, biz=True)
-    services = '<ul class="gtk">' + ''.join(f'<li>{ic("f-route")}<div><b>{e(h)}</b>{e(x)}</div></li>' for h, x in MICE_SERVICES) + '</ul>'
-    mice_layout('/mice/services/', 'Our services', 'MICE and conference packages: flexible, tailor-made, with professional on-site coordination.', '/img/cricova.jpg',
-                services + '<p class="tagline-dark mt">Flexible packages · Tailor-made solutions · Professional on-site coordination</p><h2 class="mt">Why work with us</h2>'
-                + rows_html([('f-star', h, x) for h, x in MICE_WHY_US]) + '<p class="tagline-dark mt">Your objectives. Our local expertise. Every detail coordinated.</p>',
-                'MICE services in Moldova: conference venues, audio-visual, accommodation, catering, transfers, registration, interpreters, branding, networking and tours.')
-    table = '<div class="ptable cmp"><table><thead><tr><th>Hotel</th><th>Rooms</th><th>Meeting space</th><th>Largest room</th></tr></thead><tbody>' + ''.join(
-        f'<tr><th><a href="#h{n}">{e(h["name"])}</a> {"★" * h["stars"]}</th><td>{h["rooms"]}</td><td>{f"{h["space"]:,} m²" if h["space"] else "3 halls"}</td><td>{e(h["largest"])}</td></tr>'
-        for n, h in enumerate(MICE_HOTELS)) + '</tbody></table></div>'
-    hotel_img = {'Radisson Blu Leogrand Hotel & Convention Center': '/img/commons/radisson-blu-leogrand.jpg'}
-    hotels = ''.join(f"""<article class="hotel-card" id="h{n}">{f'<div class="hotel-ph">{pic(hotel_img[h["name"]], h["name"], sizes="(max-width: 980px) 100vw, 760px")}{credit(hotel_img[h["name"]])}</div>' if h['name'] in hotel_img else ''}<h3>{e(h['name'])} <span class="stars">{'★' * h['stars']}</span></h3>
-<p class="wc-meta">{ic('f-route')}{e(h['location'])}</p><p><b>Best for:</b> {e(h['best'])}</p>
-<dl class="dest-facts"><div>{ic('f-tower')}<dt>Rooms</dt><dd>{h['rooms']}</dd></div><div>{ic('f-romb')}<dt>Meetings</dt><dd>{e(h['meeting'])}</dd></div></dl>
-<p><b>Dining:</b> {e(' · '.join(h['dining']))}</p><p><a class="more" href="{h['web']}" rel="noopener" target="_blank">Hotel website →</a></p></article>""" for n, h in enumerate(MICE_HOTELS))
-    mice_layout('/mice/hotels-venues/', 'Hotels & venues in Chișinău', 'Conference hotels in the city centre, from 74 to 143 rooms and meeting rooms for up to 1,200 m².', '/img/hero-vineyard.jpg',
-                f'<h2>At a glance</h2>{table}{hotels}<div class="todo mt"><b>De completat</b>Poze ale hotelurilor (Courtyard, MIMI, Bristol, Mercure) și locațiile speciale (crame, conace) pentru evenimente. Courtyard: 162 m² după marriott.com, 285 m² în prezentare; de confirmat.</div>',
-                'Conference hotels in Chișinău: Radisson Blu Leogrand, Courtyard by Marriott, MIMI Hotel, Bristol Central Park and Mercure Jazz, with rooms and meeting capacity.')
-    lst = lambda xs: '<ul class="ticks">' + ''.join(f'<li>{e(x)}</li>' for x in xs) + '</ul>'
-    sport = f"""<div class="prose"><p class="lead">Your team. Your game. Our responsibility.</p>
-<p>Enjoy Moldova by Solei Tourism is a Moldovan DMC specialising in sports travel, team logistics and hospitality for international sports delegations. Since {SPORT_SINCE} we have supported professional football clubs, national teams, youth teams in UEFA youth competitions, beach volleyball teams and other delegations.</p></div>
-<div class="sport-ph">{pic('/img/commons/zimbru-stadium.jpg', 'Zimbru Stadium, Chișinău', sizes='(max-width: 980px) 100vw, 760px')}{credit('/img/commons/zimbru-stadium.jpg')}</div>
-<div class="proof-mini"><div><b>{len(SPORT_ASSOCIATIONS)}</b><span>national football associations</span></div><div><b>{len(SPORT_CLUBS)}</b><span>international clubs</span></div><div><b>{SPORT_SINCE}</b><span>first team welcomed</span></div></div>
-<p class="trusted-by"><b>Trusted by</b> {e(' · '.join(SPORT_TRUSTED))} <span>and many more</span></p>
-<h2>Sports we serve</h2>{rows_html([('f-star', h, x) for h, x in SPORT_SERVED])}
-<details class="fold"><summary><h2>Complete team travel &amp; logistics</h2></summary>{lst(SPORT_SERVICES).replace('class="ticks"', 'class="ticks cols2"', 1)}</details>
-<details class="fold"><summary><h2>Accommodation &amp; catering</h2></summary><p>Hotels in Chișinău and beyond, chosen around the team’s schedule, training locations and competition venues. Meals go beyond standard hotel service:</p>{lst(SPORT_CATERING).replace('class="ticks"', 'class="ticks cols2"', 1)}</details>
-<details class="fold"><summary><h2>Transport</h2></summary>{lst(SPORT_TRANSPORT).replace('class="ticks"', 'class="ticks cols2"', 1)}</details>
-<details class="fold"><summary><h2>Training facilities &amp; stadiums</h2></summary>{lst(SPORT_TRAINING)}</details>
-<details class="fold"><summary><h2>Dedicated coordination, 24/7</h2></summary>{lst(SPORT_COORDINATION).replace('class="ticks"', 'class="ticks cols2"', 1)}</details>
-<details class="fold"><summary><h2>Our experience in Tiraspol</h2></summary><p>Full ground handling for clubs playing away matches in Tiraspol: accommodation, transport, catering, match logistics and a coordinator who stays overnight when required. Among them:</p>{lst(SPORT_TIRASPOL)}</details>
-<h2 class="mt">Teams we have assisted</h2><details class="team-all"><summary>Show all {len(SPORT_ASSOCIATIONS) + len(SPORT_CLUBS)} teams</summary>
-<div class="team-lists"><div><h3>National football associations</h3>{lst(SPORT_ASSOCIATIONS)}</div><div><h3>International clubs</h3>{lst(SPORT_CLUBS)}</div></div></details>
-<h2 class="mt">Why choose Enjoy Moldova</h2>{rows_html([('f-romb', h, x) for h, x in SPORT_WHY])}
-<p class="tagline-dark mt">We take care of the arrangements on the ground, so your players and staff can focus on the game.</p>"""
-    mice_layout('/mice/sport-travel/', 'Sport team travel & logistics', f'Football clubs, national teams and sports delegations in Moldova since {SPORT_SINCE}: hotels, meals, transport, training pitches and 24/7 support.',
-                '/img/hero-vineyard.jpg', sport,
-                f'Sport team travel in Moldova since {SPORT_SINCE}: logistics for {len(SPORT_ASSOCIATIONS)} national football associations and {len(SPORT_CLUBS)} clubs, including away matches in Tiraspol.')
+    # ---- the four MICE pages share one template: cover, facts bar, short intro, card grids, closing band, related links
+    for path, title, sub, cover, facts, intro, body, desc in mice_sub_pages():
+        mice_layout(path, title, sub, cover, mfacts(facts) + (f'<div class="m-intro reveal">{intro}</div>' if intro else '') + body + mice_band(path) + mice_related(path),
+                    desc, form=False, biz=True)
+
+
+# ---------------------------------------------------------------- MICE template parts (19–20.11.2026)
+def mfacts(items):
+    return '<ul class="m-facts" aria-label="Key facts">' + ''.join(f'<li><b>{e(v)}</b><span>{e(t)}</span></li>' for v, t in items) + '</ul>'
+
+
+def mlist(items, cls='m-list'):
+    return f'<ul class="{cls}">' + ''.join(f'<li>{e(i)}</li>' for i in items) + '</ul>'
+
+
+def mcard(title, text='', n=None, img=None, details='', link=None, sub='', head=''):
+    """One card for every MICE grid: optional photo (or a spec header), number, title, client text, a Details drawer, a link."""
+    top = head or (f'<div class="m-ph">{pic(img, title, sizes="(max-width: 640px) 92vw, (max-width: 980px) 46vw, 380px")}</div>' if img else '')
+    return (f'<article class="m-card{"" if top else " plain"}">{top}<div class="m-cb">'
+            + (f'<span class="m-n">{n:02d}</span>' if n else '') + f'<h3>{e(title)}</h3>'
+            + (f'<p class="m-sub">{e(sub)}</p>' if sub else '') + (f'<p>{e(text)}</p>' if text else '')
+            + (f'<details class="m-det"><summary>Details</summary><div class="m-det-b">{details}</div></details>' if details else '')
+            + (f'<a class="m-link" href="{link[1]}"{" rel=\"noopener\" target=\"_blank\"" if link[1].startswith("http") else ""}>{e(link[0])} <span aria-hidden="true">→</span></a>' if link else '')
+            + '</div></article>')
+
+
+def msec(title, cards, cols=3, lead='', after='', tight=False, rows=False):
+    return (f'<section class="m-sec reveal"><div class="m-sec-h"><h2>{e(title)}</h2>' + (f'<p>{e(lead)}</p>' if lead else '') + '</div>'
+            f'<div class="m-grid c{cols}{" tight" if tight else ""}{" rows" if rows else ""}">{cards}</div>{after}</section>')
+
+
+def mice_band(path):
+    if path == '/mice/sport-travel/':
+        t, s, ps, tag = SPORT_CLOSING
+        txt = f'<p class="m-band-t">{e(t)}<br>{e(s)}</p>' + ''.join(f'<p class="m-band-p">{e(p)}</p>' for p in ps) + f'<p class="m-band-p"><b>Enjoy Moldova by Solei Tourism</b> · {e(tag)}</p>'
+    else:
+        txt = '<p class="m-band-t">Make business happen.<br>Make Moldova memorable.</p>'
+    return f'''<div class="m-band reveal"><div>{txt}</div><div class="ctas"><a class="btn btn-primary" href="/mice/#quote">Request an event proposal</a>
+<a class="btn btn-ghost-light" href="tel:{SITE["phone"].replace(" ", "")}">Call {SITE["phone"]}</a></div></div>'''
+
+
+def mice_related(path):
+    links = ''.join(f'<a href="{u}">{e(n)} <span aria-hidden="true">→</span></a>' for u, n in [('/mice/', 'MICE overview')] + MICE_PAGES if u != path)
+    return f'<nav class="m-related" aria-label="More on MICE"><span>More on MICE</span>{links}</nav>'
+
+
+def mice_sub_pages():
+    # 1. Why choose Moldova
+    why_img = ['/img/hero-river.jpg', '/img/unsplash/banquet-hall.jpg', '/img/wine-tasting-table.jpg', '/img/orheiul-vechi.jpg', '/img/unsplash/team-golden-hour.jpg', '/img/unsplash/event-room-setup.jpg']
+    why = ''.join(mcard(h, x, img=im, details=f'<h4>{e(dt)}</h4>{mlist(items)}', link=lk)
+                  for k, ((_, h, x), im, (dt, items, lk)) in enumerate(zip(MICE_WHY_MOLDOVA, why_img, MICE_WHY_DETAILS), 1))
+    yield ('/mice/why-moldova/', 'Why choose Moldova for your next event?', 'A distinctive destination. Meaningful connections. Memorable experiences.', '/img/unsplash/meeting-room.jpg',
+           [('2001', 'local DMC since'), ('5', 'conference hotels in Chișinău'), ('1,200 sq m', 'largest convention center'), ('7', 'partner wineries')],
+           '<p>Conferences, executive meetings, incentive trips, team building and corporate celebrations: since 2001 Enjoy Moldova by Solei Tourism selects the venue, books the hotels and arranges transfers, catering, audio-visual equipment, interpreters and the social programme, with one point of contact from the first request to the last transfer.</p>',
+           msec('Six reasons to meet in Moldova', why, 3),
+           'Why choose Moldova for your next event: versatile venues, wine and gastronomy, culture and one local DMC partner for everything.')
+
+    # 2. Our services
+    svc = ''.join(mcard(h, x, img=im) for h, x, im in SERVICES)
+    why_us = ''.join(mcard(h, x) for h, x in WHY_US)
+    yield ('/mice/services/', 'Our services: MICE & conference packages', SERVICES_TAGLINE, '/img/unsplash/event-room-setup.jpg',
+           [('10', 'MICE services'), ('1', 'local point of contact'), ('2001', 'established'), ('5', 'conference hotels in Chișinău')],
+           f'<p>{e(WHY_US_CLOSING[0])}</p>',
+           msec('What we arrange for your event', svc, 5) + msec('Why work with us?', why_us, 4, after=f'<p class="m-note">{e(WHY_US_CLOSING[1])}</p>'),
+           'MICE services in Moldova: conference venues, audio-visual, accommodation, catering, transfers, registration, interpreters, branding, networking and tours.')
+
+    # 3. Hotels & venues
+    rows = ''.join(f'<tr><th scope="row">{e(h["name"])}</th><td>{h["stars"]}-star</td><td>{e(h["rooms"])}</td><td>{e(h["halls"])}</td><td>{e(h["largest"])}</td></tr>' for h in HOTELS)
+    table = (f'<section class="m-sec reveal"><div class="m-sec-h"><h2>At a glance</h2></div><div class="m-table"><table><thead><tr><th scope="col">Hotel</th><th scope="col">Category</th>'
+             f'<th scope="col">Rooms</th><th scope="col">Meeting space</th><th scope="col">Largest room</th></tr></thead><tbody>{rows}</tbody></table></div></section>')
+    hotels = ''.join(mcard(h['name'], head=f'<div class="m-spec"><span class="m-stars">{h["stars"]}-star hotel</span><b>{e(h["rooms"])} rooms</b><span>{e(h["location"])}</span></div>',
+                           sub=f'{h["halls"]} · largest: {h["largest"]}',
+                           details=f'<p><b>Best for:</b> {e(h["best"])}</p>' + ''.join(f'<p>{e(p)}</p>' for p in h['about']) + ''.join(f'<h4>{e(t)}</h4>{mlist(xs)}' for t, xs in h['blocks']),
+                           link=('Hotel website', h['web'])) for h in HOTELS)
+    yield ('/mice/hotels-venues/', 'Hotels & venues in Chișinău', 'Five conference hotels in the city centre, from 74 to 143 rooms, with meeting space up to 1,200 sq m.', '/img/commons/radisson-blu-leogrand.jpg',
+           [('5', 'conference hotels'), ('4–5-star', 'international and local brands'), ('74–143', 'rooms per hotel'), ('1,200 sq m', 'largest convention center')],
+           '', table + msec('The hotels', hotels, 3),
+           'Conference hotels in Chișinău: Radisson Blu Leogrand, Courtyard by Marriott, MIMI Hotel, Bristol Central Park and Mercure Jazz, with rooms and meeting capacity.')
+
+    # 4. Sport travel
+    served = ''.join(mcard(h, x) for h, x in SPORT_SERVED_FULL)
+    secs = ''.join(mcard(t, img=im, sub=s, details=''.join(f'<p>{e(p)}</p>' for p in ps) + mlist(items) + ''.join(f'<p>{e(p)}</p>' for p in after))
+                   for k, (t, s, ps, items, after, im) in enumerate(SPORT_SECTIONS, 1))
+    why_s = ''.join(mcard(h, x) for h, x in SPORT_WHY_FULL)
+    teams = (f'<section class="m-sec reveal"><div class="m-sec-h"><h2>International teams we have assisted</h2><p>{e(SPORT_TEAMS_INTRO)}</p></div>'
+             f'<p class="m-trusted"><b>Trusted by</b> {e(" · ".join(SPORT_TRUSTED))}</p>'
+             f'<details class="m-det m-teams"><summary>Show all {len(SPORT_ASSOCIATIONS) + len(SPORT_CLUBS)} teams</summary><div class="m-det-b m-cols">'
+             f'<div><h3>National Football Associations</h3>{mlist(SPORT_ASSOCIATIONS)}</div><div><h3>International Football Clubs</h3>{mlist(SPORT_CLUBS)}</div></div></details></section>')
+    who = (f'<p>{e(SPORT_WHO[0])}</p><p>{e(SPORT_WHO[1])}</p>'
+           f'<details class="m-det"><summary>More about us</summary><div class="m-det-b">{"".join(f"<p>{e(p)}</p>" for p in SPORT_WHO[2:])}</div></details>')
+    yield ('/mice/sport-travel/', 'Sports team travel & logistics in Moldova', SPORT_LEAD, '/img/commons/zimbru-stadium.jpg',
+           [(str(len(SPORT_ASSOCIATIONS)), 'national football associations'), (str(len(SPORT_CLUBS)), 'international clubs'), (str(SPORT_SINCE), 'first team welcomed'), ('24/7', 'assistance during the stay')],
+           who, msec('Sports we serve', served, 4, tight=True) + msec('Complete team travel & logistics', secs, 3, rows=True) + teams
+           + msec('Why choose Enjoy Moldova?', why_s, 4, lead=SPORT_WHY_SUB, tight=True),
+           f'Sport team travel in Moldova since {SPORT_SINCE}: logistics for {len(SPORT_ASSOCIATIONS)} national football associations and {len(SPORT_CLUBS)} clubs, including away matches in Tiraspol.')
+
+
+def photo_credits():
+    rows = ''.join(f'<tr><td><a href="{c[2]}" rel="noopener" target="_blank">{e(p.rsplit("/", 1)[-1])}</a></td><td>{e(c[0] or "Wikimedia Commons")}</td><td>{e(c[1])}</td></tr>'
+                   for p, c in sorted(PHOTO_CREDITS.items()))
+    body = f'''{page_hero("About", "Photo credits", "Photos from Wikimedia Commons and Unsplash used on this website, with their authors and licences.", "/img/hero-vineyard.jpg")}
+<section class="section"><div class="wrap narrow">{crumbs(("Photo credits", None))}<div class="m-table"><table><thead><tr><th scope="col">Photo</th><th scope="col">Author</th><th scope="col">Licence</th></tr></thead><tbody>{rows}</tbody></table></div>
+<p class="small mt">All other photos: Enjoy Moldova by Solei Tourism.</p></div></section>'''
+    layout('/photo-credits/', 'Photo credits | Enjoy Moldova', 'Authors and licences of the Wikimedia Commons and Unsplash photos used on the Enjoy Moldova website.', body, [ORG_LD])
 
 
 def contact():
@@ -1646,7 +1702,7 @@ if __name__ == '__main__':
     section_index('useful-info', 'Useful info', 'Practical information for your trip: phone numbers, customs, borders and embassies.', '/img/capriana.jpg')
     for k, v in PAGES.items(): content_page(k, *v)
     plan_hub(); safety_page(); itinerary_page(); cricova_vs_milestii()
-    blog(); about_us(); mice_pages(); wineries_page(); tour_samples(); contact(); legal_pages(); thank_you(); not_found()
+    blog(); about_us(); mice_pages(); photo_credits(); wineries_page(); tour_samples(); contact(); legal_pages(); thank_you(); not_found()
     builder_page(); destinations_page()
     n = redirects()
     k = design_kit()
