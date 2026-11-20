@@ -304,3 +304,31 @@ if (reveals.length) {
     reveals.forEach(r => io.observe(r));
   } else reveals.forEach(r => r.classList.add('in'));
 }
+
+// winery photo galleries: arrows + dots; a click opens the photo large (Esc, arrows or a click outside close it)
+let wgBox;
+function wgOpen(slides, i) {
+  if (!wgBox) {
+    wgBox = document.createElement('dialog'); wgBox.className = 'wg-box';
+    wgBox.innerHTML = '<img alt=""><button class="wg-x" type="button" aria-label="Close">×</button><button class="wg-nav prev" type="button" aria-label="Previous photo">‹</button><button class="wg-nav next" type="button" aria-label="Next photo">›</button>';
+    document.body.append(wgBox);
+    $('.wg-x', wgBox).onclick = () => wgBox.close();
+    wgBox.addEventListener('click', ev => { if (ev.target === wgBox) wgBox.close(); });
+    wgBox.addEventListener('keydown', ev => { if (ev.key === 'ArrowRight') $('.next', wgBox).click(); if (ev.key === 'ArrowLeft') $('.prev', wgBox).click(); });
+  }
+  const show = k => { i = (k + slides.length) % slides.length; const img = $('img', wgBox); img.src = slides[i].dataset.full; img.alt = $('img', slides[i]).alt; };
+  $('.prev', wgBox).onclick = () => show(i - 1); $('.next', wgBox).onclick = () => show(i + 1);
+  $('.prev', wgBox).hidden = $('.next', wgBox).hidden = slides.length < 2;
+  show(i); wgBox.showModal();
+}
+$$('.js-gallery').forEach(g => {
+  const track = $('.wg-track', g), slides = $$('.wg-slide', g), prev = $('.wg-nav.prev', g), next = $('.wg-nav.next', g), dots = $('.wg-dots', g);
+  if (slides.length < 2) { prev.hidden = true; next.hidden = true; }
+  const go = i => track.scrollTo({ left: Math.max(0, Math.min(slides.length - 1, i)) * track.clientWidth, behavior: reduceMotion ? 'auto' : 'smooth' });
+  const cur = () => Math.round(track.scrollLeft / track.clientWidth);
+  slides.forEach((s, i) => { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', `Photo ${i + 1}`); b.onclick = () => go(i); dots.append(b); });
+  const mark = () => { const i = cur(); $$('button', dots).forEach((b, k) => b.toggleAttribute('aria-current', k === i)); prev.disabled = i === 0; next.disabled = i === slides.length - 1; };
+  prev.onclick = () => go(cur() - 1); next.onclick = () => go(cur() + 1);
+  track.addEventListener('scroll', mark, { passive: true }); mark();
+  slides.forEach((s, i) => s.addEventListener('click', () => wgOpen(slides, i)));
+});
