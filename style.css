@@ -888,3 +888,21 @@ details.dest-type>summary h2{margin:0}
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 @media (max-width:640px){.ticks.cols2{columns:1}.wc-meta span{margin-left:0;width:100%}}
+
+/* wineries: full price list per winery (20.11) */
+.wine-prices{overflow-x:auto;margin:var(--s4) 0 var(--s2);border:1px solid var(--line);border-radius:10px;background:var(--card)}
+.wine-prices table{width:100%;border-collapse:collapse;font-size:var(--fs-sm);font-variant-numeric:tabular-nums;min-width:560px}
+.wine-prices caption{caption-side:top;text-align:left;padding:10px 12px 0;font-size:var(--fs-xs);color:var(--muted)}
+.wine-prices th,.wine-prices td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+.wine-prices thead th{font-size:var(--fs-xs);color:var(--muted);font-weight:600}.wine-prices thead th small{display:block;font-weight:400}
+.wine-prices tbody th{text-align:left;font-weight:500;white-space:normal;min-width:170px}.wine-prices tr:last-child>*{border-bottom:0}
+.wine-prices thead th:first-child{text-align:left}
+.wine-notes{list-style:none;padding:0;margin:0 0 var(--s3);font-size:var(--fs-sm);color:var(--muted);display:grid;gap:2px}
+.winery-card:target{outline:2px solid var(--wine);outline-offset:6px;border-radius:var(--r);scroll-margin-top:110px}
+/* destinations by type: compact columns */
+.dest-type .gtk.dense{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 var(--s5)}
+.dest-type .gtk.dense li{padding:var(--s3) 0;align-items:flex-start}.dest-type .gtk.dense li b{display:inline;margin-right:6px}
+.dest-type .gtk.dense .d-txt{display:block;font-size:var(--fs-sm);color:var(--muted);line-height:1.45;margin-top:2px}
+.d-state.offer{background:var(--wine-tint);color:var(--wine)}
+@media (max-width:980px){.dest-type .gtk.dense{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.dest-type .gtk.dense{grid-template-columns:1fr}}

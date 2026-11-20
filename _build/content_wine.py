@@ -1,0 +1,72 @@
+# Wine tours & tastings 2026: the client's price list, complete and word for word.
+# Source: Drive, "Wine Tours and Tastings Moldova 2026 _package price.pdf" (read page by page on 20.11.2026).
+# Prices: EUR per person, visit + transport from Chișinău and back (RT). None = not available (X in the PDF).
+
+WINE_INTRO = [
+    'We invite everybody to enjoy our wine tours and wine tastings, follow the wine road in Moldova since the Moldovans have been always considered skillful wine-makers producing God\'s blessed drink "wine".',
+    'Moldova has the highest density of vineyards in the world and can offer a variety of wines to meet any taste. It grows both international and indigenous local varieties. But perhaps the most unique and exciting are the blends where Moldovan winemakers can express their individuality.',
+    'Explore the world of Moldovan wine and visit the world\'s biggest wine-cellars as well as small private and family-run wineries with us!',
+]
+PAX8 = (1, 2, 3, 4, 5, 6, 10, 15)
+PAX7 = (2, 3, 4, 5, 6, 10, 15)
+X = None
+
+WINE_PRICES = {
+    'cricova': dict(title='Cricova Wine cellars', days='MON-FRI 10:00-15:00', pax=PAX8,
+        text='Take an underground wine tour of Cricova wine cellars and drive through the enigmatic streets covering over 60 km in length and bearing the names Cabernet, Feteasca, Aligote, Sauvignon...named after the wines stored there. It\'s a unique place housing historic wines among which Goering\'s collection the winery is proud for. It is a place where classic sparkling wines are being matured and have won million hearts of wine lovers.',
+        rows=[('Excursion only', (77, 49, 39, 40, 36, 46, 38, 32)),
+              ('Excursion + 4 wines tasting & crackers', (92, 64, 55, 55, 51, 62, 54, 48)),
+              ('Excursion + 7 wines tasting & cheese plate & dried fruits', (105, 77, 68, 68, 64, 74, 67, 61)),
+              ('Excursion + 7 wines tasting & lunch (from 4 pax)', (X, X, X, 86, 82, 92, 85, 79))],
+        notes=['Price includes a visit to the winery with/without wine tasting and transportation services RT', '* Starting with 16:00 and on weekends 5 EUR fee is applied'],
+        langs='English / German / Italian / Romanian / Russian'),
+    'purcari': dict(title='Winery „Chateau Purcari”', days='MON-SUN 9:00 - 17:00', pax=PAX8,
+        text='Take a chance to visit the oldest worldwide known winery in Moldova "Purcari" boasting high-quality wines, and sample legendary wines from selected grapes. Feel the refined taste of gorgeous vintage wines like Rosu de Purcari, Alb de Purcari and Negru de Purcari, which was considered to be Queen Elisabeth\'s II one of the favorite wines. For all lovers of dessert wines the winery has been producing Ice Wine - a challenging wine with notes of honey, spices and fruits',
+        rows=[('Wine tour classic with 3 wines & 1 sparkling wine', (177, 100, 74, 68, 59, 66, 52, 43)),
+              ('Wine tour exclusive with 3 wines & 1 sparkling wine', (182, 105, 79, 73, 64, 71, 57, 48))],
+        notes=['Price includes a visit to the winery with wine tasting and transportation services RT'],
+        langs='English / Romanian / Russian'),
+    'milestii-mici': dict(title='Mileștii Mici wine cellars', days='MON-FRI 10:00-17:00', pax=PAX8,
+        text='Get into one of the biggest wine cellars in the world and witness "the Golden Collection Milestii Mici" entering the Guinness Book of Records for storing more than 1.5 Million bottles of harmonious wines. All Milestii Mici Wines like Riesling, Pinot, Feteasca, Codru, Milestskoe are being matured in a silent atmosphere of large galleries giving them a special flavor and nobility.',
+        rows=[('Excursion only', (74, 46, 37, 37, 33, 44, 36, 30)),
+              ('Wine tour & tasting 3 wines & snack', (97, 69, 60, 60, 56, 67, 59, 53)),
+              ('Wine tour & tasting 5 wines & European lunch', (X, 90, 80, 81, 77, 87, 79, 74)),
+              ('Wine tour & tasting 5 wines & traditional lunch', (X, 95, 85, 86, 82, 92, 85, 79))],
+        notes=['Price includes a visit to the winery with/without wine tasting and transportation services RT', '* Starting with 17:00 and on weekends 5 EUR fee is applied'],
+        langs='English / Romanian / Russian'),
+    'castel-mimi': dict(title='Castel MIMI winery', days='MON-FRI 10:00-17:00', pax=PAX8,
+        text='Castel MIMI is a winery with a history that takes us centuries back when the first chateau was founded in Bessarabia by an outstanding personality Constantin Mimi. Constantin Mimi has contributed to modernization of Bessarabian viticulture- he has planted new European varietal which is more productive and more resistant to diseases such as Aligote. All guests of this unique castle can savor delicious meals from local eco products served in a winery restaurant offering nice atmosphere and refined dishes.',
+        rows=[('Classic tour & tasting 3 wines', (97, 59, 46, 49, 43, 50, 44, 36)),
+              ('Iconic tour & tasting 5 wines with snacks', (115, 77, 64, 67, 61, 68, 62, 54)),
+              ('Autentic tour & tasting 4 wines with lunch', (128, 90, 77, 79, 74, 81, 74, 67)),
+              ('Autentic tour & tasting 4 wines with dinner', (133, 95, 82, 85, 79, 86, 79, 61)),
+              ('Fusion tour & tasting 5 wines with dinner', (141, 103, 90, 92, 87, 94, 87, 79))],
+        notes=['Price includes a visit to the winery with wine tasting and transportation services RT', '* on weekend 5 EUR fee/pp is applied'],
+        langs='English / Romanian / Russian'),
+    'vartely': dict(title='Winery “Château Vartely”', days='TUE-SUN 11:00 - 17:00', pax=PAX7,
+        text='While in Orhei region, must visit the winery Chateau Vartely and don\'t lose the opportunity to enjoy prominent quality wines highly appreciated by distinguished experts at various international competitions.\nChateau Vartely is a unique Moldovan project for producing wines according to classic European quality standards. The company has planted young vines brought from European winegrowers, thus giving some special aristocratic notes to future Moldavian wines.',
+        rows=[('Tour & tasting 2 wines', (62, 44, 42, 36, 46, 37, 28)),
+              ('Tour & tasting 3 wines & snack', (69, 52, 50, 44, 54, 45, 36)),
+              ('Tour & tasting 4 wines & food pairing', (72, 55, 53, 46, 56, 48, 39)),
+              ('Tour & tasting 4 sparkling wines', (74, 57, 55, 49, 59, 50, 41)),
+              ('Tour & tasting 6 wines & food pairing', (85, 68, 65, 59, 69, 61, 51))],
+        notes=['Price includes a visit to the winery with wine tasting and transportation services RT'],
+        langs='English / Romanian / Russian'),
+    'cojusna': dict(title='Chateau Cojusna winery', days='TUE-SUN 11:00 - 17:00', pax=PAX7,
+        text='Has a modern wine production facility and a distillery, as well as a tourist complex based on a French chateau in design. This includes cellars where wines are aged in oak barrels, along with 175,000 bottles in the Galeria Migdal wine collection; a distillery which produces divine and several tasting rooms decorated in a medieval style. Visitors are also invited to the top of the Chateau Cojușna tower, to enjoy a breathtaking panoramic view of the winery\'s vineyards. One of the most exclusive and valuable wine bottles stored at the winery is MARSALA, produced in 1990.',
+        rows=[('Tour & tasting 2 wines "Degust"', (46, 38, 40, 36, 33, 33, 29)),
+              ('Tour & tasting 4 authentic wines & cheese plate', (51, 43, 45, 41, 38, 38, 34)),
+              ('Tour & tasting 4 superior wines & cheese plate', (59, 50, 53, 49, 46, 46, 42)),
+              ('Tour & tasting 4 divines + cheese & chocolate', (62, 53, 55, 51, 57, 54, 48)),
+              ('Tour & tasting 4 authentic wines & lunch', (X, X, 63, 59, 65, 62, 56))],
+        notes=['Price includes a visit to the winery with wine tasting and transportation services RT', '* Special request for Monday or extra hours 10 EUR/pp fee is applied'],
+        langs='English / Romanian / Russian'),
+    'asconi': dict(title='Asconi winery', days='MON-SUN 10:00-17:00', pax=PAX7,
+        text='Has been producing excellent wines by implementing the best technologies and at the same time preserving old Moldavian traditions of wine making. The winery is aiming at producing best ever wines by combining French varietals such as Merlot, Muscat, Chardonnay, Cabernet Sauvignon with local ones like Feteasca Neagra and Feteasca Alba. While there one can take an active part at the whole process of wine-making from harvesting grape to pressing it, from fermentation to bottling.',
+        rows=[('Tour & tasting 3 wines', (52, 38, 38, 32, 41, 31, 23)),
+              ('Tour & tasting 5 wines', (56, 41, 42, 36, 45, 34, 27)),
+              ('Tour & tasting 3 wines + traditional lunch', (73, 59, 59, 53, 62, 52, 44))],
+        notes=['Price includes a visit to the winery with wine tasting and transportation services RT'],
+        langs='English / Romanian / Russian'),
+}
+WINE_RESERVATION = 'Tour reservation at e-mail: incoming@solei.md · +373 60 433133 / 60 377522 · +373 22 890 900 · 9, A. Corobceanu str. MD 2004, Chişinău, Republic of Moldova'

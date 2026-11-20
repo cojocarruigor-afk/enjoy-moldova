@@ -57,6 +57,9 @@ AGENCY_TOUR_TYPES = ['Cultural tours', 'Rural & eco tourism', 'City breaks', 'Go
 
 # ---- New day-tour texts (Word files, 2026): tour data key -> file in data/tours_2026/, title
 DAY_TOURS_2026 = {
+    'chisinau-asconi': 'Discover Chișinău, Experience Asconi: A City & Wine Journey',
+    'chisinau-cojusna': 'Discover Chișinău, Taste Moldova: City Tour & Château Cojușna',
+    'causeni-purcari': 'From Medieval Frescoes to Legendary Wines: Căușeni & Château Purcari',
     'old-orhei-complex-and-chateau-vartely-winery': 'Old Orhei & Château Vartely',
     'milestii-mici-wine-cellars-and-private-gallery-by-petru-costin': 'Petru Costin Gallery & Mileștii Mici',
     'cricova-winery-and-orheiul-vechi-tour': 'Moldova in a Day: Curchi, Old Orhei & Cricova',
@@ -82,6 +85,15 @@ NEW_DAY_TOURS = [  # tours that are not on the site yet (images reused until the
     dict(slug='plaiul-fagului-mircesti', kind='day', duration='Full day', cats=['day-trips', 'nature-countryside', 'wine-tours'], min_pax=4,
          summary='Forest trails in the Plaiul Fagului reserve, then fine wines, landscapes and local food at Crama Mircești.',
          card='Plaiul Fagului · Crama Mircești', images=['/img/grapes-hands.jpg', '/img/wine-tasting-table.jpg']),
+    dict(slug='chisinau-asconi', kind='day', duration='Full day', cats=['day-trips', 'wine-tours'],
+         summary='A three-hour tour of Chișinău with a local guide, free time for lunch, then Asconi Winery in Puhoi: cellars, guided tasting and Moldovan hospitality.',
+         card='Chișinău city tour · Asconi Winery (Puhoi)', images=['/img/wineries/asconi.jpg', '/img/placinta-wine.jpg']),
+    dict(slug='chisinau-cojusna', kind='day', duration='Full day', cats=['day-trips', 'wine-tours'],
+         summary='Chișinău’s landmarks, market and Valea Morilor Park with a local guide, then Château Cojușna: cellars, the Migdal collection, the distillery and a tasting.',
+         card='Chișinău city tour · Château Cojușna', images=['/img/wineries/cojusna.jpg', '/img/wine-glass-grapes.jpg']),
+    dict(slug='causeni-purcari', kind='day', duration='Full day', cats=['day-trips', 'wine-tours', 'culture-heritage'],
+         summary='The semi-underground church of Căușeni with its 1763 frescoes, then Château Purcari, founded in 1827: cellars, legendary wines and a tasting.',
+         card='Căușeni church · Château Purcari', images=['/img/purcari.jpg', '/img/wineries/purcari.jpg']),
 ]
 
 # ---- MICE & Business Travel (MICE presentation)

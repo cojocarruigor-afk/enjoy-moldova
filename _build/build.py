@@ -15,6 +15,7 @@ import hashlib
 ASSET_V = {f: hashlib.md5(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), f), 'rb').read()).hexdigest()[:8] for f in ('style.css', 'site.js')}
 SITE_PAGES = {p['slug']: p for p in DATA('pages.json')}
 POSTS = DATA('posts.json')
+from content_wine import WINE_PRICES, WINE_INTRO
 from content_mice import (SERVICES, SERVICES_TAGLINE, WHY_US, WHY_US_CLOSING, HOTELS, SPORT_LEAD, SPORT_WHO, SPORT_TEAMS_INTRO, SPORT_SECTIONS, SPORT_WHY_SUB, SPORT_CLOSING)
 from content_mice import SPORT_SERVED as SPORT_SERVED_FULL, SPORT_WHY as SPORT_WHY_FULL
 from content_2026 import (WINERIES_2026, WINERIES_ON_REQUEST, AGENCY_PDF, TASTE5_DAYS, AGENCY_TOUR_TYPES, DAY_TOURS_2026, NEW_DAY_TOURS,
@@ -946,21 +947,27 @@ def tours_index():
 
 
 def wineries_page():
-    """Wineries & wine tastings: the 7 wineries of the 2026 price list (photo, days, tastings, price from) + the PDF."""
+    """Wineries & wine tastings: the 7 wineries of the 2026 price list, complete: description, days, every tasting with its price per group size."""
+    day_tour = {'cricova': 'cricova-winery-and-orheiul-vechi-tour', 'milestii-mici': 'milestii-mici-wine-cellars-and-private-gallery-by-petru-costin',
+                'castel-mimi': 'trip-to-transnistria', 'vartely': 'old-orhei-complex-and-chateau-vartely-winery', 'cojusna': 'chisinau-cojusna',
+                'asconi': 'chisinau-asconi', 'purcari': 'causeni-purcari'}
     cards = []
     for w in WINERIES_2026:
-        opts = ''.join(f'<li>{e(o)}</li>' for o in w['options'])
-        note = f'<p class="small">{e(w["note"])}</p>' if w['note'] else ''
+        pr = WINE_PRICES[w['key']]
+        head = ''.join(f'<th scope="col">{n}<small>{"pax"}</small></th>' for n in pr['pax'])
+        rows = ''.join(f'<tr><th scope="row">{e(o)}</th>' + ''.join(f'<td>{"–" if v is None else f"{v}€"}</td>' for v in vals) + '</tr>' for o, vals in pr['rows'])
+        tour = BY_SLUG.get(day_tour.get(w['key'], ''))
         cards.append(f"""<article class="winery-card" id="{w['key']}"><div class="wc-ph">{pic(f"/img/wineries/{w['key']}.jpg", w['name'], sizes='(max-width: 980px) 100vw, 560px')}</div>
-<div class="wc-body"><h3>{e(w['name'])}</h3>
-<p class="wc-meta">{ic('f-sun')}{e(w['days'])}, {e(w['hours'])}<span>From <b>€{w['from_eur']}</b> per person</span></p>
-<p>{e(w['text'])}</p><details class="tastings"><summary>{len(w['options'])} tastings to choose from</summary><ul class="ticks">{opts}</ul>{note}
-<p class="small">Tours in {e(w['langs'])}. Price per person, depends on group size; transport from Chișinău and back included.</p></details>
-<div class="wc-ctas"><a class="btn btn-primary" href="{QUOTE}">Request this tasting</a>{wa(f"Hello! I’d like a tour and tasting at {w['name']}.", 'WhatsApp')}</div></div></article>""")
+<div class="wc-body"><h3>{e(pr['title'])}</h3>
+<p class="wc-meta">{ic('f-sun')}{e(pr['days'])}<span>From <b>€{min(v for _, r in pr['rows'] for v in r if v)}</b> per person</span></p>
+{''.join(f'<p>{e(x)}</p>' for x in pr['text'].split(chr(10)))}
+<div class="wine-prices"><table><caption>Price in EUR per 1 person, by group size</caption><thead><tr><th scope="col">Tour &amp; tasting</th>{head}</tr></thead><tbody>{rows}</tbody></table></div>
+<ul class="wine-notes">{''.join(f'<li>{e(n)}</li>' for n in pr['notes'])}<li>Wine tours run in {e(pr['langs'])}</li></ul>
+<div class="wc-ctas"><a class="btn btn-primary" href="{QUOTE}">Request this tasting</a>{f'<a class="btn btn-outline" href="{tour["url"]}">Full-day tour with this winery</a>' if tour else ''}</div></div></article>""")
     others = ''.join(f'<li>{e(n)}</li>' for n in WINERIES_ON_REQUEST)
     body = page_hero('Tours', 'Wineries & wine tastings', 'Seven of Moldova’s best wineries, from Guinness-record cellars to family estates. Transport from Chișinău, tasting and guide arranged.', '/img/milestii-mici.jpg') + f"""
 <section class="section"><div class="wrap">{crumbs(('Tours', '/tours/'), ('Wineries & wine tastings', None))}
-<p class="lead">Choose a winery below and ask for a tasting. All wineries, tastings and prices by group size are in our
+{"".join(f"<p>{e(x)}</p>" for x in WINE_INTRO)}<p class="lead">Choose a winery below: every tasting with its price per group size, transport from Chișinău and back included. The same list is in our
 <a class="pdf-inline" href="/pdf/wine-tours-tastings-2026.pdf" download>{ic('f-glass')}Wine Tours &amp; Tastings 2026 (PDF)</a>.</p>
 <div class="chips mb cat-chips">{''.join(f'<a class="chip" href="#{w["key"]}">{e(w["name"])}</a>' for w in WINERIES_2026)}</div>
 <div class="winery-list">{''.join(cards)}</div>
@@ -1053,19 +1060,23 @@ def dest_by_type():
     out = []
     for key, name in DEST_TYPES:
         rows = []
-        for k in DEST_TYPE[key]:
+        offers = {w['key'] for w in WINERIES_2026}
+        for k in sorted(DEST_TYPE[key], key=lambda k: k not in offers):  # wineries with a tasting offer first
             n, text, slugs, icon, main = places[k]
             href = f'/destinations/{k}/' if main else (BY_SLUG[slugs[0]]['url'] if slugs else '')
+            if k in offers:  # the winery's own offer: tastings and prices with transport
+                href = f'/tours/wineries/#{k}'
             title = f'<a href="{href}">{e(n)}</a>' if href else e(n)
-            state = (f'<span class="d-state on">In {len(slugs)} tour{"s" if len(slugs) > 1 else ""}</span>' if slugs
+            state = ('<span class="d-state offer">Tasting offer</span>' if k in offers else
+                     f'<span class="d-state on">In {len(slugs)} tour{"s" if len(slugs) > 1 else ""}</span>' if slugs
                      else '<span class="d-state">On request</span>')
-            rows.append(f'<li class="{"" if slugs else "req"}">{ic(icon)}<div><b>{title}</b>{state}<br>{e(text)}</div></li>')
-        body = (f'<ul class="gtk">{"".join(rows)}</ul>' if rows else
+            rows.append(f'<li class="{"" if slugs or k in offers else "req"}">{ic(icon)}<div><b>{title}</b>{state}<span class="d-txt">{e(text)}</span></div></li>')
+        body = (f'<ul class="gtk dense">{"".join(rows)}</ul>' if rows else
                 '<div class="todo"><b>De completat: lista festivalurilor</b>Echipa trimite lista și o descriere scurtă a fiecăruia.</div>')
         out.append(f'<details class="dest-type" id="{key}"{" open" if not out else ""}><summary><h2>{e(name)} <small>{len(rows) or ""}</small></h2></summary>{body}</details>')
     return f'''<section class="section pt0"><div class="wrap"><h2 class="mb">Destinations by type</h2>
 <div class="chips mb">{''.join(f'<a class="chip" href="#{k}">{e(n)}</a>' for k, n in DEST_TYPES)}</div>
-<p class="small mb"><span class="d-state on">In our tours</span> places we visit on our tours · <span class="d-state">On request</span> we arrange a visit on request.</p>
+<p class="small mb"><span class="d-state on">In our tours</span> places we visit on our tours · <span class="d-state">On request</span> we arrange a visit on request · <span class="d-state offer">Tasting offer</span> winery visit with tasting and transport, priced by group size.</p>
 <div class="dest-types">{''.join(out)}</div></div></section>'''
 
 
