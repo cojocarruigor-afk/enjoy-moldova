@@ -1558,7 +1558,7 @@ def mice_sub_pages():
     yield ('/mice/sport-travel/', 'Sports team travel & logistics in Moldova', SPORT_LEAD, '/img/commons/zimbru-stadium.jpg',
            [(str(len(SPORT_ASSOCIATIONS)), 'national football associations'), (str(len(SPORT_CLUBS)), 'international clubs'), (str(SPORT_SINCE), 'first team welcomed'), ('24/7', 'assistance during the stay')],
            who, msec('Sports we serve', served, 4, tight=True) + msec('Complete team travel & logistics', secs, 3, rows=True) + teams
-           + msec('Why choose Enjoy Moldova?', why_s, 4, lead=SPORT_WHY_SUB, tight=True),
+           + msec('Why Choose Enjoy Moldova as Your Sports Travel Partner in Moldova?', why_s, 4, lead=SPORT_WHY_SUB, tight=True),
            f'Sport team travel in Moldova since {SPORT_SINCE}: logistics for {len(SPORT_ASSOCIATIONS)} national football associations and {len(SPORT_CLUBS)} clubs, including away matches in Tiraspol.')
 
 
