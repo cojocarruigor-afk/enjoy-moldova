@@ -916,11 +916,13 @@ details.dest-type>summary h2{margin:0}
 .wg-nav.prev{left:10px}.wg-nav.next{right:10px}.wg-nav[disabled]{opacity:0;pointer-events:none}
 .wg-dots{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:center;gap:6px}
 .wg-dots button{width:8px;height:8px;border-radius:50%;border:0;padding:0;background:rgba(255,255,255,.55);cursor:pointer}.wg-dots button[aria-current]{background:#fff;width:20px;border-radius:4px}
-.wg-box{border:0;padding:0;background:transparent;max-width:none;max-height:none;overflow:visible}
-.wg-box::backdrop{background:rgba(15,10,10,.9)}
-.wg-box img{max-width:92vw;max-height:86vh;width:auto;height:auto;display:block;border-radius:8px}
+.wg-box{position:fixed;inset:0;width:100vw;height:100vh;max-width:100vw;max-height:100vh;margin:0;padding:0;border:0;background:transparent;overflow:hidden}
+.wg-box[open]{display:flex;align-items:center;justify-content:center}
+.wg-box::backdrop{background:rgba(15,10,10,.92)}
+.wg-box img{max-width:calc(100vw - 140px);max-height:calc(100vh - 80px);width:auto;height:auto;object-fit:contain;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .wg-box .wg-x{position:fixed;top:16px;right:16px;width:44px;height:44px;border-radius:50%;border:0;background:#fff;font-size:24px;cursor:pointer}
-.wg-box .wg-nav{position:fixed}.wg-box .wg-nav.prev{left:16px}.wg-box .wg-nav.next{right:16px}
+.wg-box .wg-nav{position:fixed;top:50%}.wg-box .wg-nav.prev{left:16px}.wg-box .wg-nav.next{right:16px}
+@media (max-width:640px){.wg-box img{max-width:100vw;max-height:80vh;border-radius:0}.wg-box .wg-nav{top:auto;bottom:24px;transform:none}}
 .wine-more{margin:var(--s3) 0;border:0;background:none}.wine-more:first-of-type{border-top:0}
 .wine-more>summary{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:var(--wine);padding:10px 16px;border:1.5px solid var(--wine);border-radius:var(--r-pill);list-style:none}
 .wine-more>summary::-webkit-details-marker{display:none}.wine-more>summary span{font-weight:400;font-size:var(--fs-sm);color:var(--muted)}
