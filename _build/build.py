@@ -957,12 +957,17 @@ def wineries_page():
         head = ''.join(f'<th scope="col">{n}<small>{"pax"}</small></th>' for n in pr['pax'])
         rows = ''.join(f'<tr><th scope="row">{e(o)}</th>' + ''.join(f'<td>{"–" if v is None else f"{v}€"}</td>' for v in vals) + '</tr>' for o, vals in pr['rows'])
         tour = BY_SLUG.get(day_tour.get(w['key'], ''))
-        cards.append(f"""<article class="winery-card" id="{w['key']}"><div class="wc-ph">{pic(f"/img/wineries/{w['key']}.jpg", w['name'], sizes='(max-width: 980px) 100vw, 560px')}</div>
+        extra = {'cricova': ['/img/cricova.jpg'], 'milestii-mici': ['/img/milestii-mici.jpg'], 'purcari': ['/img/purcari.jpg']}.get(w['key'], [])
+        gdir = os.path.join(ROOT, 'img', 'wineries', 'g')
+        photos = [f'/img/wineries/g/{f}' for f in sorted(os.listdir(gdir)) if f.startswith(w['key'] + '-')] + extra
+        slides = ''.join(f'<button class="wg-slide" type="button" data-full="{rsrc(ph, 1600)}" aria-label="Enlarge photo {n} of {len(photos)}: {e(w["name"])}">{pic(ph, w["name"], sizes="(max-width: 980px) 100vw, 560px")}</button>' for n, ph in enumerate(photos, 1))
+        cards.append(f"""<article class="winery-card" id="{w['key']}"><div class="wg js-gallery"><div class="wg-track">{slides}</div>
+<button class="wg-nav prev" type="button" aria-label="Previous photo">‹</button><button class="wg-nav next" type="button" aria-label="Next photo">›</button><div class="wg-dots"></div></div>
 <div class="wc-body"><h3>{e(pr['title'])}</h3>
 <p class="wc-meta">{ic('f-sun')}{e(pr['days'])}<span>From <b>€{min(v for _, r in pr['rows'] for v in r if v)}</b> per person</span></p>
 {''.join(f'<p>{e(x)}</p>' for x in pr['text'].split(chr(10)))}
-<div class="wine-prices"><table><caption>Price in EUR per 1 person, by group size</caption><thead><tr><th scope="col">Tour &amp; tasting</th>{head}</tr></thead><tbody>{rows}</tbody></table></div>
-<ul class="wine-notes">{''.join(f'<li>{e(n)}</li>' for n in pr['notes'])}<li>Wine tours run in {e(pr['langs'])}</li></ul>
+<details class="wine-more"><summary>See tastings &amp; prices <span>{len(pr['rows'])} options</span></summary><div class="wine-prices"><table><caption>Price in EUR per 1 person, by group size</caption><thead><tr><th scope="col">Tour &amp; tasting</th>{head}</tr></thead><tbody>{rows}</tbody></table></div>
+<ul class="wine-notes">{''.join(f'<li>{e(n)}</li>' for n in pr['notes'])}<li>Wine tours run in {e(pr['langs'])}</li></ul></details>
 <div class="wc-ctas"><a class="btn btn-primary" href="{QUOTE}">Request this tasting</a>{f'<a class="btn btn-outline" href="{tour["url"]}">Full-day tour with this winery</a>' if tour else ''}</div></div></article>""")
     others = ''.join(f'<li>{e(n)}</li>' for n in WINERIES_ON_REQUEST)
     body = page_hero('Tours', 'Wineries & wine tastings', 'Seven of Moldova’s best wineries, from Guinness-record cellars to family estates. Transport from Chișinău, tasting and guide arranged.', '/img/milestii-mici.jpg') + f"""

@@ -906,3 +906,22 @@ details.dest-type>summary h2{margin:0}
 .d-state.offer{background:var(--wine-tint);color:var(--wine)}
 @media (max-width:980px){.dest-type .gtk.dense{grid-template-columns:1fr 1fr}}
 @media (max-width:640px){.dest-type .gtk.dense{grid-template-columns:1fr}}
+
+/* winery gallery: swipe carousel, click to enlarge (20.11) */
+.wg{position:relative;border-radius:var(--r);overflow:hidden;background:var(--ink-d)}
+.wg-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;scroll-behavior:smooth}.wg-track::-webkit-scrollbar{display:none}
+.wg-slide{flex:0 0 100%;scroll-snap-align:start;border:0;padding:0;background:none;cursor:zoom-in;aspect-ratio:4/3;position:relative}
+.wg-slide img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.wg-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.9);color:var(--ink);font-size:24px;line-height:1;cursor:pointer;box-shadow:var(--shadow-1)}
+.wg-nav.prev{left:10px}.wg-nav.next{right:10px}.wg-nav[disabled]{opacity:0;pointer-events:none}
+.wg-dots{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:center;gap:6px}
+.wg-dots button{width:8px;height:8px;border-radius:50%;border:0;padding:0;background:rgba(255,255,255,.55);cursor:pointer}.wg-dots button[aria-current]{background:#fff;width:20px;border-radius:4px}
+.wg-box{border:0;padding:0;background:transparent;max-width:none;max-height:none;overflow:visible}
+.wg-box::backdrop{background:rgba(15,10,10,.9)}
+.wg-box img{max-width:92vw;max-height:86vh;width:auto;height:auto;display:block;border-radius:8px}
+.wg-box .wg-x{position:fixed;top:16px;right:16px;width:44px;height:44px;border-radius:50%;border:0;background:#fff;font-size:24px;cursor:pointer}
+.wg-box .wg-nav{position:fixed}.wg-box .wg-nav.prev{left:16px}.wg-box .wg-nav.next{right:16px}
+.wine-more{margin:var(--s3) 0;border:0;background:none}.wine-more:first-of-type{border-top:0}
+.wine-more>summary{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:var(--wine);padding:10px 16px;border:1.5px solid var(--wine);border-radius:var(--r-pill);list-style:none}
+.wine-more>summary::-webkit-details-marker{display:none}.wine-more>summary span{font-weight:400;font-size:var(--fs-sm);color:var(--muted)}
+.wine-more[open]>summary{background:var(--wine-tint)}
