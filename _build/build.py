@@ -1528,7 +1528,7 @@ def mice_sub_pages():
     yield ('/mice/services/', 'Our services: MICE & conference packages', SERVICES_TAGLINE, '/img/unsplash/event-room-setup.jpg',
            [('10', 'MICE services'), ('1', 'local point of contact'), ('2001', 'established'), ('5', 'conference hotels in Chișinău')],
            f'<p>{e(WHY_US_CLOSING[0])}</p>',
-           msec('What we arrange for your event', svc, 5) + msec('Why work with us?', why_us, 4, after=f'<p class="m-note">{e(WHY_US_CLOSING[1])}</p>'),
+           msec('Our Services', svc, 5) + msec('Why work with us?', why_us, 4, after=f'<p class="m-note">{e(WHY_US_CLOSING[1])}</p>'),
            'MICE services in Moldova: conference venues, audio-visual, accommodation, catering, transfers, registration, interpreters, branding, networking and tours.')
 
     # 3. Hotels & venues
